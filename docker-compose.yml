@@ -7,6 +7,15 @@
   REDIS_URL: redis://redis:6379/0
   CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173","http://poverty.dpdns.org","http://8.139.7.171"]'
 
+x-backend-build: &backend-build
+  context: .
+  dockerfile: backend/Dockerfile
+  args:
+    PIP_INDEX_URL: ${PIP_INDEX_URL:-https://pypi.tuna.tsinghua.edu.cn/simple}
+    PIP_TRUSTED_HOST: ${PIP_TRUSTED_HOST:-pypi.tuna.tsinghua.edu.cn}
+    PIP_DEFAULT_TIMEOUT: ${PIP_DEFAULT_TIMEOUT:-180}
+    PIP_RETRIES: ${PIP_RETRIES:-10}
+
 services:
   postgres:
     image: postgis/postgis:15-3.3
@@ -41,9 +50,7 @@ services:
       - pv_network
 
   backend:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: *backend-build
     restart: unless-stopped
     environment: *backend-env
     depends_on:
@@ -63,9 +70,7 @@ services:
       - pv_network
 
   data-sync:
-    build:
-      context: .
-      dockerfile: backend/Dockerfile
+    build: *backend-build
     profiles: ["ops"]
     environment: *backend-env
     depends_on:
