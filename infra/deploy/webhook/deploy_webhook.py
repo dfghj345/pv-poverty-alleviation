@@ -27,7 +27,7 @@ PATH = os.getenv("WEBHOOK_PATH", "/webhook")
 
 PROJECT_DIR = Path(os.getenv("PROJECT_DIR", "/srv/pv-poverty-alleviation"))
 FRONTEND_DIR = Path(os.getenv("FRONTEND_DIR", str(PROJECT_DIR / "frontend")))
-FRONTEND_DIST_DIR = Path(os.getenv("FRONTEND_DIST_DIR", "/var/www/poverty.dpdns.org"))
+FRONTEND_DIST_DIR = Path(os.getenv("FRONTEND_DIST_DIR", "/var/www/poverty.top"))
 COMPOSE_DIR = Path(os.getenv("COMPOSE_DIR", str(PROJECT_DIR)))
 TARGET_BRANCH = os.getenv("WEBHOOK_BRANCH", "refs/heads/main")
 

@@ -5,7 +5,7 @@
   DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-password_pv_2026}@postgres:5432/${POSTGRES_DB:-pv_poverty_alleviation}
   PIPELINE_DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-password_pv_2026}@postgres:5432/${POSTGRES_DB:-pv_poverty_alleviation}
   REDIS_URL: redis://redis:6379/0
-  CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173","http://poverty.dpdns.org","http://8.139.7.171"]'
+  CORS_ORIGINS: '["http://localhost:5173","http://127.0.0.1:5173","http://poverty.top","https://poverty.top","http://8.139.7.171"]'
 
 x-backend-build: &backend-build
   context: .
