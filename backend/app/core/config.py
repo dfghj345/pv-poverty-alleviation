@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import json
 from pathlib import Path
@@ -8,17 +8,35 @@ from pydantic import Field, PostgresDsn, RedisDsn, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+def _build_postgres_async_dsn(
+    *,
+    user: Optional[str],
+    password: Optional[str],
+    host: str,
+    port: int,
+    database: Optional[str],
+) -> Optional[PostgresDsn]:
+    if not (user and password and database):
+        return None
+
+    dsn = f'postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}'
+    try:
+        return PostgresDsn(dsn)
+    except Exception:
+        return None
+
+
 class Settings(BaseSettings):
     PROJECT_NAME: str = 'PV_Poverty_Alleviation_API'
 
     DEBUG: bool = False
 
     # Database
-    DATABASE_URL: PostgresDsn
+    DATABASE_URL: Optional[PostgresDsn] = None
     PIPELINE_DATABASE_URL: Optional[PostgresDsn] = None
     REDIS_URL: RedisDsn
 
-    # Optional PostgreSQL parts (used to derive PIPELINE_DATABASE_URL)
+    # Optional PostgreSQL parts (used to derive DATABASE_URL / PIPELINE_DATABASE_URL)
     POSTGRES_USER: Optional[str] = None
     POSTGRES_PASSWORD: Optional[str] = None
     POSTGRES_DB: Optional[str] = None
@@ -99,27 +117,43 @@ class Settings(BaseSettings):
         raise ValueError('CORS_ORIGINS must be a list or comma-separated string')
 
     def model_post_init(self, __context) -> None:  # type: ignore[override]
-        # Build PIPELINE_DATABASE_URL automatically when only POSTGRES_* is provided.
-        if self.PIPELINE_DATABASE_URL is not None:
-            return
-        if not (self.POSTGRES_USER and self.POSTGRES_PASSWORD and self.POSTGRES_DB):
-            return
-
-        dsn = (
-            f'postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}'
-            f'@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}'
+        derived_database_url = _build_postgres_async_dsn(
+            user=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            database=self.POSTGRES_DB,
         )
-        try:
-            self.PIPELINE_DATABASE_URL = PostgresDsn(dsn)  # type: ignore[assignment]
-        except Exception:
-            # Keep startup non-blocking; real engine creation will raise a clear error later.
-            return
+
+        if self.DATABASE_URL is None and derived_database_url is not None:
+            self.DATABASE_URL = derived_database_url
+
+        if self.PIPELINE_DATABASE_URL is None:
+            self.PIPELINE_DATABASE_URL = self.DATABASE_URL
+
+    @property
+    def database_url(self) -> str:
+        if self.DATABASE_URL is None:
+            raise RuntimeError('DATABASE_URL is not configured')
+        return str(self.DATABASE_URL)
+
+    @property
+    def pipeline_database_url(self) -> str:
+        if self.PIPELINE_DATABASE_URL is not None:
+            return str(self.PIPELINE_DATABASE_URL)
+        if self.DATABASE_URL is not None:
+            return str(self.DATABASE_URL)
+        raise RuntimeError('PIPELINE_DATABASE_URL is not configured')
 
     # App Config
+    _PROJECT_ROOT = Path(__file__).resolve().parents[3]
     _BACKEND_DIR = Path(__file__).resolve().parents[2]
     model_config = SettingsConfigDict(
-        # Always load backend/.env regardless of current working directory.
-        env_file=str(_BACKEND_DIR / '.env'),
+        # Support both repo-root .env and backend/.env. Environment variables still win.
+        env_file=(
+            str(_PROJECT_ROOT / '.env'),
+            str(_BACKEND_DIR / '.env'),
+        ),
         case_sensitive=True,
         extra='ignore'
     )

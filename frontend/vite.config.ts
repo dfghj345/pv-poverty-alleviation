@@ -8,6 +8,7 @@ export default defineConfig(({ mode }) => {
   const backendTarget = env.VITE_BACKEND_TARGET || 'http://127.0.0.1:8000';
 
   return {
+    base: '/',
     plugins: [vue()],
 
     resolve: {
@@ -20,6 +21,7 @@ export default defineConfig(({ mode }) => {
       host: '0.0.0.0',
       port: 5173,
       strictPort: true,
+      // Dev only: production traffic is handled by Nginx.
       proxy: {
         '/api': {
           target: backendTarget,

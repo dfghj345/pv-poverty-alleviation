@@ -5,6 +5,7 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker, create_async_engine
 
 from data_pipeline.core.config import pipeline_settings
+from data_pipeline.db.models import Base
 
 _engine: Optional[AsyncEngine] = None
 _sessionmaker: Optional[async_sessionmaker[AsyncSession]] = None
@@ -14,20 +15,17 @@ def get_engine() -> AsyncEngine:
     global _engine
     if _engine is not None:
         return _engine
-    if pipeline_settings.PIPELINE_DATABASE_URL is None:
-        raise RuntimeError("PIPELINE_DATABASE_URL is not configured; cannot create db engine")
-
     _engine = create_async_engine(
-        str(pipeline_settings.PIPELINE_DATABASE_URL),
+        pipeline_settings.pipeline_database_url,
         echo=False,
         future=True,
-        # Windows + asyncpg：避免 stale connection / 复用死连接
+        # Keep pooled connections healthy across long-running jobs.
         pool_pre_ping=True,
         pool_recycle=1800,
         pool_size=1,
         max_overflow=0,
         connect_args={
-            # asyncpg 不支持 ssl="disable"；用 False 显式禁用 SSL 协商
+            # Disable SSL negotiation explicitly for local/docker Postgres.
             "ssl": False,
             "timeout": 10,
             "command_timeout": 60,
@@ -49,4 +47,15 @@ def AsyncSessionLocal() -> AsyncSession:
     return get_sessionmaker()()
 
 
-engine = None  # type: ignore[assignment]
+async def initialize_database() -> None:
+    engine = get_engine()
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+
+
+async def dispose_engine() -> None:
+    global _engine, _sessionmaker
+    if _engine is not None:
+        await _engine.dispose()
+    _engine = None
+    _sessionmaker = None

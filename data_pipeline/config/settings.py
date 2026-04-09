@@ -1,20 +1,35 @@
 from __future__ import annotations
 
+from pathlib import Path
 from typing import Optional
 
 from pydantic import PostgresDsn
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-class PipelineSettings(BaseSettings):
-    """
-    工程化 settings：
-    - 允许只跑 parse/process 测试时不配置 DB/Broker（保持可测试性）
-    - 忽略 .env 中与本 pipeline 无关的变量（避免 extra_forbidden）
-    """
+def _build_postgres_async_dsn(
+    *,
+    user: Optional[str],
+    password: Optional[str],
+    host: str,
+    port: int,
+    database: Optional[str],
+) -> Optional[PostgresDsn]:
+    if not (user and password and database):
+        return None
 
+    dsn = f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{database}"
+    try:
+        return PostgresDsn(dsn)
+    except Exception:
+        return None
+
+
+class PipelineSettings(BaseSettings):
+    DATABASE_URL: Optional[PostgresDsn] = None
     PIPELINE_DATABASE_URL: Optional[PostgresDsn] = None
-    # 兼容已有项目 .env（仅提供 POSTGRES_*），自动拼接 PIPELINE_DATABASE_URL
+
+    # Optional PostgreSQL parts (used to derive DATABASE_URL / PIPELINE_DATABASE_URL)
     POSTGRES_USER: Optional[str] = None
     POSTGRES_PASSWORD: Optional[str] = None
     POSTGRES_DB: Optional[str] = None
@@ -25,24 +40,44 @@ class PipelineSettings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     HTTP_TRUST_ENV: bool = False
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True, extra="ignore")
+    _PROJECT_ROOT = Path(__file__).resolve().parents[2]
+    model_config = SettingsConfigDict(
+        env_file=(
+            str(_PROJECT_ROOT / ".env"),
+            str(_PROJECT_ROOT / "backend" / ".env"),
+        ),
+        case_sensitive=True,
+        extra="ignore",
+    )
 
     def model_post_init(self, __context) -> None:  # type: ignore[override]
-        # 若未显式配置 PIPELINE_DATABASE_URL，则从 POSTGRES_* 组合
-        if self.PIPELINE_DATABASE_URL is not None:
-            return
-        if not (self.POSTGRES_USER and self.POSTGRES_PASSWORD and self.POSTGRES_DB):
-            return
-        dsn = (
-            f"postgresql+asyncpg://{self.POSTGRES_USER}:{self.POSTGRES_PASSWORD}"
-            f"@{self.POSTGRES_HOST}:{self.POSTGRES_PORT}/{self.POSTGRES_DB}"
+        derived_database_url = _build_postgres_async_dsn(
+            user=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            database=self.POSTGRES_DB,
         )
-        try:
-            self.PIPELINE_DATABASE_URL = PostgresDsn(dsn)  # type: ignore[assignment]
-        except Exception:
-            # 不阻断启动：后续真正建 engine 时会给出清晰错误
-            return
+
+        if self.DATABASE_URL is None and derived_database_url is not None:
+            self.DATABASE_URL = derived_database_url
+
+        if self.PIPELINE_DATABASE_URL is None:
+            self.PIPELINE_DATABASE_URL = self.DATABASE_URL
+
+    @property
+    def database_url(self) -> str:
+        if self.DATABASE_URL is None:
+            raise RuntimeError("DATABASE_URL is not configured")
+        return str(self.DATABASE_URL)
+
+    @property
+    def pipeline_database_url(self) -> str:
+        if self.PIPELINE_DATABASE_URL is not None:
+            return str(self.PIPELINE_DATABASE_URL)
+        if self.DATABASE_URL is not None:
+            return str(self.DATABASE_URL)
+        raise RuntimeError("PIPELINE_DATABASE_URL is not configured")
 
 
 pipeline_settings = PipelineSettings()
-

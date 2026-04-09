@@ -1,0 +1,11 @@
+﻿[Unit]
+Description=PV Poverty Alleviation data sync job
+After=docker.service network-online.target
+Wants=docker.service network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/srv/pv-poverty-alleviation
+ExecStart=/usr/bin/docker compose run --rm data-sync
+StandardOutput=journal
+StandardError=journal

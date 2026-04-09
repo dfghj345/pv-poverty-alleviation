@@ -1,15 +1,11 @@
 import asyncio
 import asyncpg
 
+from data_pipeline.core.config import pipeline_settings
+
 
 async def main():
-    conn = await asyncpg.connect(
-        user="pipeline_user",
-        password="pipeline",
-        database="pipeline_db",
-        host="127.0.0.1",
-        port=5432,
-    )
+    conn = await asyncpg.connect(dsn=pipeline_settings.pipeline_database_url)
     print("connected")
 
     val = await conn.fetchval("SELECT 1;")

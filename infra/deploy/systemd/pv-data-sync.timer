@@ -1,0 +1,10 @@
+[Unit]
+Description=Run PV Poverty Alleviation data sync every night
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Persistent=true
+Unit=pv-data-sync.service
+
+[Install]
+WantedBy=timers.target

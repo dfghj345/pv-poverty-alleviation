@@ -1,4 +1,4 @@
-﻿from contextlib import asynccontextmanager
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -8,19 +8,22 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from app.api.v1.endpoints import calculator, cost, generation, policy, poverty, projects, regions, weather
 from app.core.config import settings
 from app.core.logging import configure_logging, get_logger
-from app.db.session import engine
+from app.db.session import dispose_database, initialize_database
+from data_pipeline.db.session import dispose_engine as dispose_pipeline_database
+from data_pipeline.db.session import initialize_database as initialize_pipeline_database
 from app.schemas.response import Result
-from app.services.pipeline_reader import dispose_pipeline_engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     configure_logging(settings.LOG_LEVEL)
     logger = get_logger('app.lifespan')
+    await initialize_database()
+    await initialize_pipeline_database()
     logger.info('backend starting')
     yield
-    await dispose_pipeline_engine()
-    await engine.dispose()
+    await dispose_pipeline_database()
+    await dispose_database()
     logger.info('backend stopped; db pools disposed')
 
 
