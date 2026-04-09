@@ -1,0 +1,276 @@
+{
+  "items": [
+    {
+      "province": "北京市",
+      "benchmark_price_yuan_per_kwh": 0.38,
+      "subsidy_yuan_per_kwh": 0.0,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "天津市",
+      "benchmark_price_yuan_per_kwh": 0.39,
+      "subsidy_yuan_per_kwh": 0.005,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "上海市",
+      "benchmark_price_yuan_per_kwh": 0.4,
+      "subsidy_yuan_per_kwh": 0.01,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "重庆市",
+      "benchmark_price_yuan_per_kwh": 0.41,
+      "subsidy_yuan_per_kwh": 0.015,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "河北省",
+      "benchmark_price_yuan_per_kwh": 0.42,
+      "subsidy_yuan_per_kwh": 0.02,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "山西省",
+      "benchmark_price_yuan_per_kwh": 0.43,
+      "subsidy_yuan_per_kwh": 0.025,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "辽宁省",
+      "benchmark_price_yuan_per_kwh": 0.44,
+      "subsidy_yuan_per_kwh": 0.0,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "吉林省",
+      "benchmark_price_yuan_per_kwh": 0.45,
+      "subsidy_yuan_per_kwh": 0.005,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "黑龙江省",
+      "benchmark_price_yuan_per_kwh": 0.38,
+      "subsidy_yuan_per_kwh": 0.01,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "江苏省",
+      "benchmark_price_yuan_per_kwh": 0.39,
+      "subsidy_yuan_per_kwh": 0.015,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "浙江省",
+      "benchmark_price_yuan_per_kwh": 0.4,
+      "subsidy_yuan_per_kwh": 0.02,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "安徽省",
+      "benchmark_price_yuan_per_kwh": 0.41,
+      "subsidy_yuan_per_kwh": 0.025,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "福建省",
+      "benchmark_price_yuan_per_kwh": 0.42,
+      "subsidy_yuan_per_kwh": 0.0,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "江西省",
+      "benchmark_price_yuan_per_kwh": 0.43,
+      "subsidy_yuan_per_kwh": 0.005,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "山东省",
+      "benchmark_price_yuan_per_kwh": 0.44,
+      "subsidy_yuan_per_kwh": 0.01,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "河南省",
+      "benchmark_price_yuan_per_kwh": 0.45,
+      "subsidy_yuan_per_kwh": 0.015,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "湖北省",
+      "benchmark_price_yuan_per_kwh": 0.38,
+      "subsidy_yuan_per_kwh": 0.02,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "湖南省",
+      "benchmark_price_yuan_per_kwh": 0.39,
+      "subsidy_yuan_per_kwh": 0.025,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "广东省",
+      "benchmark_price_yuan_per_kwh": 0.4,
+      "subsidy_yuan_per_kwh": 0.0,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "海南省",
+      "benchmark_price_yuan_per_kwh": 0.41,
+      "subsidy_yuan_per_kwh": 0.005,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "四川省",
+      "benchmark_price_yuan_per_kwh": 0.42,
+      "subsidy_yuan_per_kwh": 0.01,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "贵州省",
+      "benchmark_price_yuan_per_kwh": 0.43,
+      "subsidy_yuan_per_kwh": 0.015,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "云南省",
+      "benchmark_price_yuan_per_kwh": 0.44,
+      "subsidy_yuan_per_kwh": 0.02,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "陕西省",
+      "benchmark_price_yuan_per_kwh": 0.45,
+      "subsidy_yuan_per_kwh": 0.025,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "甘肃省",
+      "benchmark_price_yuan_per_kwh": 0.38,
+      "subsidy_yuan_per_kwh": 0.0,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "青海省",
+      "benchmark_price_yuan_per_kwh": 0.39,
+      "subsidy_yuan_per_kwh": 0.005,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "台湾省",
+      "benchmark_price_yuan_per_kwh": 0.4,
+      "subsidy_yuan_per_kwh": 0.01,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "内蒙古自治区",
+      "benchmark_price_yuan_per_kwh": 0.41,
+      "subsidy_yuan_per_kwh": 0.015,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "广西壮族自治区",
+      "benchmark_price_yuan_per_kwh": 0.42,
+      "subsidy_yuan_per_kwh": 0.02,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "西藏自治区",
+      "benchmark_price_yuan_per_kwh": 0.43,
+      "subsidy_yuan_per_kwh": 0.025,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "宁夏回族自治区",
+      "benchmark_price_yuan_per_kwh": 0.44,
+      "subsidy_yuan_per_kwh": 0.0,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "新疆维吾尔自治区",
+      "benchmark_price_yuan_per_kwh": 0.45,
+      "subsidy_yuan_per_kwh": 0.005,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "香港特别行政区",
+      "benchmark_price_yuan_per_kwh": 0.38,
+      "subsidy_yuan_per_kwh": 0.01,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    },
+    {
+      "province": "澳门特别行政区",
+      "benchmark_price_yuan_per_kwh": 0.39,
+      "subsidy_yuan_per_kwh": 0.015,
+      "policy_date": "2025-01-01",
+      "policy_type": "seed_baseline",
+      "source": "policy_seed_baseline"
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+
+services:
+  db:
+    image: postgis/postgis:15-3.3
+    container_name: pv_prod_db
+    restart: always
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password_pv_2026
+      POSTGRES_DB: pv_poverty_alleviation
+      TZ: Asia/Shanghai
+    ports:
+      - "5432:5432" # 如果不需要用 DataGrip 远程连数据库，建议注释掉这行更安全
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - pv_network
+
+  redis:
+    image: redis:alpine
+    container_name: pv_prod_redis
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - redis_data:/data
+    networks:
+      - pv_network
+
+  backend:
+    build: 
+      context: . # 指向根目录的 Dockerfile
+    container_name: pv_prod_api
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://admin:password_pv_2026@db:5432/pv_poverty_alleviation
+      - PIPELINE_DATABASE_URL=postgresql+asyncpg://admin:password_pv_2026@db:5432/pv_poverty_alleviation
+      - REDIS_URL=redis://redis:6379/0
+      - TZ=Asia/Shanghai
+    depends_on:
+      - db
+      - redis
+    networks:
+      - pv_network
+
+  frontend:
+    build: 
+      context: ./frontend
+      args:
+        - VITE_APP_AMAP_KEY=${VITE_APP_AMAP_KEY}
+        - VITE_APP_AMAP_SECURITY_CODE=${VITE_APP_AMAP_SECURITY_CODE}
+    container_name: pv_prod_web
+    restart: always
+    ports:
+      - "80:80" # 直接通过服务器 IP 访问网站
+    depends_on:
+      - backend
+    networks:
+      - pv_network
+
+networks:
+  pv_network:
+    driver: bridge
+
+# 使用 Docker 管理的具名卷，比相对路径挂载更稳定，避免权限报错
+volumes:
+  postgres_data:
+  redis_data:

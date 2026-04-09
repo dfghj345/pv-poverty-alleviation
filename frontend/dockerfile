@@ -1,0 +1,48 @@
+# ---- 阶段 1：构建产物 (Builder) ----
+FROM node:20-alpine AS builder
+WORKDIR /app
+
+# 1. 复制依赖文件
+COPY package.json package-lock.json* ./
+
+# 2. 安装依赖
+RUN npm install
+
+# 3. 重点：声明构建参数 (这些参数在构建时由外部传入)
+ARG VITE_APP_AMAP_KEY
+ARG VITE_APP_AMAP_SECURITY_CODE
+
+# 4. 将参数转化为环境变量，这样 Vite build 时能读取到它们
+ENV VITE_APP_AMAP_KEY=$VITE_APP_AMAP_KEY
+ENV VITE_APP_AMAP_SECURITY_CODE=$VITE_APP_AMAP_SECURITY_CODE
+
+# 5. 复制源码
+COPY . .
+
+# 6. 执行 build (此时环境变量已生效)
+RUN npx vite build
+    
+    # ---- 阶段 2：生产服务器 (Nginx) ----
+    FROM nginx:alpine
+    ENV TZ=Asia/Shanghai
+    RUN apk add --no-cache tzdata
+    
+    COPY --from=builder /app/dist /usr/share/nginx/html
+    
+    RUN echo 'server { \
+        listen 80; \
+        location / { \
+            root /usr/share/nginx/html; \
+            index index.html; \
+            try_files $uri $uri/ /index.html; \
+        } \
+        location /api/ { \
+            proxy_pass http://backend:8000/; \
+            proxy_set_header Host $host; \
+            proxy_set_header X-Real-IP $remote_addr; \
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; \
+        } \
+    }' > /etc/nginx/conf.d/default.conf
+    
+    EXPOSE 80
+    CMD ["nginx", "-g", "daemon off;"]

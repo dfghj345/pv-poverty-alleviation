@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "province": "云南省",
+      "city": "昭通市",
+      "county": "鲁甸县",
+      "population": 400000,
+      "income_per_capita_yuan": 13200.5,
+      "energy_condition": "电网覆盖一般，具备分布式光伏条件",
+      "tags": "原贫困县,乡村振兴重点",
+      "adcode": "530621",
+      "source_url": "offline://poverty-sample"
+    },
+    {
+      "province": "河北省",
+      "city": null,
+      "county": "阜平县",
+      "population": 210000,
+      "income_per_capita_yuan": 11800,
+      "energy_condition": "山区为主，适合户用光伏",
+      "tags": "原贫困县",
+      "adcode": "130624",
+      "source_url": "offline://poverty-sample"
+    }
+  ]
+}
+

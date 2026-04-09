@@ -1,0 +1,27 @@
+{
+  "items": [
+    {
+      "project_name": "云南-村级扶贫电站A",
+      "province": "云南",
+      "capacity_kw": 500,
+      "annual_generation_kwh": 650000,
+      "annual_income_yuan": 260000,
+      "project_type": "扶贫电站",
+      "status": "operating",
+      "effective_date": "2025",
+      "source_url": "offline://pv-generation-sample"
+    },
+    {
+      "project_name": "河北-户用示范项目B",
+      "province": "河北",
+      "capacity_kw": 300,
+      "annual_generation_kwh": 360000,
+      "annual_income_yuan": 150000,
+      "project_type": "示范项目",
+      "status": "operating",
+      "effective_date": "2024",
+      "source_url": "offline://pv-generation-sample"
+    }
+  ]
+}
+

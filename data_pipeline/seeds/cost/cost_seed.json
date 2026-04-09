@@ -1,0 +1,132 @@
+{
+  "items": [
+    {
+      "name": "全国分布式光伏总造价",
+      "category": "total",
+      "province": null,
+      "unit_cost_yuan_per_kw": 3450,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "全国组件采购均价",
+      "category": "module",
+      "province": null,
+      "component_price_yuan_per_w": 0.86,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "全国逆变器采购均价",
+      "category": "inverter",
+      "province": null,
+      "component_price_yuan_per_w": 0.18,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "全国支架系统均价",
+      "category": "mounting",
+      "province": null,
+      "component_price_yuan_per_w": 0.12,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "全国施工并网成本",
+      "category": "construction",
+      "province": null,
+      "unit_cost_yuan_per_kw": 520,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "全国运维成本",
+      "category": "opex",
+      "province": null,
+      "unit_cost_yuan_per_kw": 95,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "北京市分布式光伏总造价",
+      "category": "total",
+      "province": "北京市",
+      "unit_cost_yuan_per_kw": 3350,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "天津市分布式光伏总造价",
+      "category": "total",
+      "province": "天津市",
+      "unit_cost_yuan_per_kw": 3368,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "上海市分布式光伏总造价",
+      "category": "total",
+      "province": "上海市",
+      "unit_cost_yuan_per_kw": 3386,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "重庆市分布式光伏总造价",
+      "category": "total",
+      "province": "重庆市",
+      "unit_cost_yuan_per_kw": 3404,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "河北省分布式光伏总造价",
+      "category": "total",
+      "province": "河北省",
+      "unit_cost_yuan_per_kw": 3422,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "山西省分布式光伏总造价",
+      "category": "total",
+      "province": "山西省",
+      "unit_cost_yuan_per_kw": 3440,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "辽宁省分布式光伏总造价",
+      "category": "total",
+      "province": "辽宁省",
+      "unit_cost_yuan_per_kw": 3458,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "吉林省分布式光伏总造价",
+      "category": "total",
+      "province": "吉林省",
+      "unit_cost_yuan_per_kw": 3476,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "黑龙江省分布式光伏总造价",
+      "category": "total",
+      "province": "黑龙江省",
+      "unit_cost_yuan_per_kw": 3494,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    },
+    {
+      "name": "江苏省分布式光伏总造价",
+      "category": "total",
+      "province": "江苏省",
+      "unit_cost_yuan_per_kw": 3512,
+      "effective_date": "2025-01-01",
+      "source": "cost_seed_baseline"
+    }
+  ]
+}

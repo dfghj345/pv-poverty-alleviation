@@ -1,0 +1,24 @@
+﻿{
+  "items": [
+    {
+      "province": "云南省",
+      "city": "昭通市",
+      "county": "鲁甸县",
+      "population": 420000,
+      "income_per_capita_yuan": 10800,
+      "energy_condition": "农村配网改造中",
+      "tags": "山地,巩固拓展脱贫成果",
+      "adcode": "530621"
+    },
+    {
+      "province": "宁夏回族自治区",
+      "city": "固原市",
+      "county": "西吉县",
+      "population": 480000,
+      "income_per_capita_yuan": 12400,
+      "energy_condition": "分布式光伏接入中",
+      "tags": "干旱,县域新能源",
+      "adcode": "640422"
+    }
+  ]
+}

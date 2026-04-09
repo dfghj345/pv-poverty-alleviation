@@ -1,0 +1,32 @@
+{
+  "items": [
+    {
+      "name": "2026Q1-全国分布式-综合单位造价",
+      "category": "total",
+      "province": null,
+      "unit_cost_yuan_per_kw": 3200,
+      "component_price_yuan_per_w": null,
+      "effective_date": "2026-01",
+      "source_url": "offline://pv-cost-sample"
+    },
+    {
+      "name": "2026Q1-云南-户用-综合单位造价",
+      "category": "total",
+      "province": "云南",
+      "unit_cost_yuan_per_kw": 3400,
+      "component_price_yuan_per_w": null,
+      "effective_date": "2026-01",
+      "source_url": "offline://pv-cost-sample"
+    },
+    {
+      "name": "2026Q1-组件价格-182mm",
+      "category": "module",
+      "province": null,
+      "unit_cost_yuan_per_kw": null,
+      "component_price_yuan_per_w": 1.18,
+      "effective_date": "2026-01",
+      "source_url": "offline://pv-cost-sample"
+    }
+  ]
+}
+
