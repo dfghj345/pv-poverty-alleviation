@@ -1,9 +1,0 @@
-{
-    "python.analysis.extraPaths": ["./backend"],
-    "python.testing.pytestArgs": [
-        "backend/tests"
-    ],
-    "cursorpyright.analysis.extraPaths": [
-        "./backend"
-    ]
-}
