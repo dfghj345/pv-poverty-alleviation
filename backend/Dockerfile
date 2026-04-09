@@ -21,8 +21,13 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
 COPY requirements.txt /app/requirements.txt
-RUN python -c "import playwright" \
-    && grep -vEi '^[[:space:]]*playwright([[:space:]=<>!~].*)?$' /app/requirements.txt > /tmp/requirements.docker.txt \
+RUN if python -c "import playwright" >/dev/null 2>&1; then \
+        echo "playwright already available in base image; skipping duplicate install"; \
+        grep -vEi '^[[:space:]]*playwright([[:space:]=<>!~].*)?$' /app/requirements.txt > /tmp/requirements.docker.txt; \
+    else \
+        echo "playwright not preinstalled; installing full requirements"; \
+        cp /app/requirements.txt /tmp/requirements.docker.txt; \
+    fi \
     && python -m pip install \
         --no-cache-dir \
         --retries ${PIP_RETRIES} \
