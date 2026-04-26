@@ -121,6 +121,11 @@ class GridAccessRecord:
 class GenerationRecord:
     project_name: str
     province: Optional[str]
+    city: Optional[str] = None
+    county: Optional[str] = None
+    year: Optional[int] = None
+    installed_capacity_kw: Optional[Decimal] = None
+    utilization_hours: Optional[Decimal] = None
     capacity_kw: Optional[Decimal] = None
     annual_generation_kwh: Optional[Decimal] = None
     annual_income_yuan: Optional[Decimal] = None
@@ -128,6 +133,7 @@ class GenerationRecord:
     status: Optional[str] = None
     effective_date: Optional[str] = None
     source: str = "generation"
+    remark: Optional[str] = None
     source_url: Optional[str] = None
 
 

@@ -23,6 +23,7 @@ from data_pipeline.base.storage import BaseStorage, StoreResult
 from data_pipeline.base.spider import BaseSpider
 from data_pipeline.core.config import get_site, pipeline_settings
 from data_pipeline.core.context import RunContext
+from data_pipeline.core.errors import SkipPipelineError
 from data_pipeline.core.logging import get_ctx_logger
 from data_pipeline.core.request import HttpClient, PlaywrightHtmlClient, RequestOptions
 from data_pipeline.core.results import ErrorDetail, PipelineDetails, PipelineReport, PipelineSummary, StageErrors
@@ -129,6 +130,18 @@ class PipelineRunner:
             f0 = perf_counter()
             try:
                 raw = await spider.fetch(fctx)
+            except SkipPipelineError as e:
+                stage_durations["fetch"] = int((perf_counter() - f0) * 1000)
+                meta["request_log"] = _request_log(
+                    spider=spider.name,
+                    url=site_cfg.url,
+                    fetch_meta=fctx.meta,
+                    html_length=0,
+                    parsed_item_count=0,
+                    duration_ms=stage_durations["fetch"],
+                )
+                log.warning("spider skipped during fetch", extra={"reason": str(e)})
+                return _report("skipped", stage, 0, int((perf_counter() - t0) * 1000), skipped_reason=str(e))
             except Exception as e:
                 tb = traceback.format_exc()
                 errors.fetch_errors.append(_err("crawl", e, url=site_cfg.url))
@@ -174,6 +187,18 @@ class PipelineRunner:
             try:
                 items = spider.parse(raw, pctx)
                 spider.validate_items(items, pctx)
+            except SkipPipelineError as e:
+                stage_durations["parse"] = int((perf_counter() - p0) * 1000)
+                meta["request_log"] = _request_log(
+                    spider=spider.name,
+                    url=site_cfg.url,
+                    fetch_meta=fctx.meta,
+                    html_length=_raw_length(raw),
+                    parsed_item_count=0,
+                    duration_ms=stage_durations["fetch"] + stage_durations["parse"],
+                )
+                log.warning("spider skipped during parse", extra={"reason": str(e)})
+                return _report("skipped", stage, 0, int((perf_counter() - t0) * 1000), skipped_reason=str(e))
             except Exception as e:
                 errors.parse_errors.append(_err("parse", e, url=site_cfg.url))
                 stage_durations["parse"] = int((perf_counter() - p0) * 1000)
@@ -206,6 +231,10 @@ class PipelineRunner:
                 pr0 = perf_counter()
                 try:
                     items = processor.process(items, prctx)  # type: ignore[assignment,arg-type]
+                except SkipPipelineError as e:
+                    stage_durations["process"] = int((perf_counter() - pr0) * 1000)
+                    log.warning("spider skipped during process", extra={"reason": str(e)})
+                    return _report("skipped", stage, 0, int((perf_counter() - t0) * 1000), skipped_reason=str(e))
                 except Exception as e:
                     errors.process_errors.append(_err("parse", e, url=site_cfg.url))
                     stage_durations["process"] = int((perf_counter() - pr0) * 1000)
@@ -237,6 +266,10 @@ class PipelineRunner:
                 s0 = perf_counter()
                 try:
                     r: StoreResult = await storage.store(items, sctx)  # type: ignore[arg-type]
+                except SkipPipelineError as e:
+                    stage_durations["store"] = int((perf_counter() - s0) * 1000)
+                    log.warning("spider skipped during store", extra={"reason": str(e)})
+                    return _report("skipped", "store", 0, int((perf_counter() - t0) * 1000), skipped_reason=str(e))
                 except Exception as e:
                     # --stage store 时缺少 DB 配置：标记为 skipped，不中断测试
                     if stage == "store" and isinstance(e, RuntimeError) and "PIPELINE_DATABASE_URL" in str(e):

@@ -18,39 +18,45 @@ class GenerationCleaner(BaseProcessor[GenerationRawItem, GenerationRecord]):
     def process(self, items: List[GenerationRawItem], ctx: RunContext) -> List[GenerationRecord]:
         log = get_ctx_logger(__name__, ctx=ctx)
         out: List[GenerationRecord] = []
-        for idx, it in enumerate(items):
+        for idx, item in enumerate(items):
             try:
+                year = item.year
                 out.append(
                     GenerationRecord(
-                        project_name=it.project_name.strip(),
-                        province=_norm_opt(it.province),
-                        capacity_kw=_nonneg_opt(it.capacity_kw),
-                        annual_generation_kwh=_nonneg_opt(it.annual_generation_kwh),
-                        annual_income_yuan=_nonneg_opt(it.annual_income_yuan),
-                        project_type=_norm_opt(it.project_type),
-                        status=_norm_opt(it.status),
-                        effective_date=_norm_opt(it.effective_date),
-                        source="generation",
-                        source_url=it.source_url,
+                        project_name=item.project_name.strip(),
+                        province=_norm_opt(item.province),
+                        city=_norm_opt(item.city),
+                        county=_norm_opt(item.county),
+                        year=year,
+                        installed_capacity_kw=_nonneg_opt(item.installed_capacity_kw),
+                        utilization_hours=_nonneg_opt(item.utilization_hours),
+                        capacity_kw=_nonneg_opt(item.installed_capacity_kw),
+                        annual_generation_kwh=_nonneg_opt(item.annual_generation_kwh),
+                        annual_income_yuan=_nonneg_opt(item.annual_income_yuan),
+                        project_type=_norm_opt(item.project_type),
+                        status=_norm_opt(item.status),
+                        effective_date=_norm_opt(item.effective_date) or (str(year) if year is not None else None),
+                        source=_norm_opt(item.source) or "generation",
+                        remark=_norm_opt(item.remark),
+                        source_url=item.source_url,
                     )
                 )
-            except Exception as e:
-                log.warning("process generation item failed", extra={"item_index": idx, "error": str(e)})
+            except Exception as exc:
+                log.warning("process generation item failed", extra={"item_index": idx, "error": str(exc)})
         return out
 
 
-def _norm_opt(v: Optional[str]) -> Optional[str]:
-    if v is None:
+def _norm_opt(value: Optional[str]) -> Optional[str]:
+    if value is None:
         return None
-    s = v.strip()
-    return s or None
+    text = value.strip()
+    return text or None
 
 
-def _nonneg_opt(v: Optional[Decimal]) -> Optional[Decimal]:
-    if v is None:
+def _nonneg_opt(value: Optional[Decimal]) -> Optional[Decimal]:
+    if value is None:
         return None
     try:
-        return v if v >= 0 else None
+        return value if value >= 0 else None
     except Exception:
         return None
-

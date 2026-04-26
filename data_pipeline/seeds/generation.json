@@ -1,0 +1,304 @@
+{
+  "items": [
+    {
+      "province": "安徽",
+      "city": "合肥",
+      "county": "长丰县",
+      "year": 2022,
+      "installed_capacity_kw": 18500,
+      "utilization_hours": 1180,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "安徽",
+      "city": "合肥",
+      "county": "长丰县",
+      "year": 2023,
+      "installed_capacity_kw": 22400,
+      "utilization_hours": 1210,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "安徽",
+      "city": "合肥",
+      "county": "长丰县",
+      "year": 2024,
+      "installed_capacity_kw": 26800,
+      "utilization_hours": 1240,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "云南",
+      "city": "昆明",
+      "county": "东川区",
+      "year": 2022,
+      "installed_capacity_kw": 24300,
+      "utilization_hours": 1280,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "云南",
+      "city": "昆明",
+      "county": "东川区",
+      "year": 2023,
+      "installed_capacity_kw": 28600,
+      "utilization_hours": 1320,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "云南",
+      "city": "昆明",
+      "county": "东川区",
+      "year": 2024,
+      "installed_capacity_kw": 33200,
+      "utilization_hours": 1360,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "贵州",
+      "city": "毕节",
+      "county": "威宁彝族回族苗族自治县",
+      "year": 2022,
+      "installed_capacity_kw": 21100,
+      "utilization_hours": 1230,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "贵州",
+      "city": "毕节",
+      "county": "威宁彝族回族苗族自治县",
+      "year": 2023,
+      "installed_capacity_kw": 25900,
+      "utilization_hours": 1260,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "贵州",
+      "city": "毕节",
+      "county": "威宁彝族回族苗族自治县",
+      "year": 2024,
+      "installed_capacity_kw": 30700,
+      "utilization_hours": 1290,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "四川",
+      "city": "阿坝",
+      "county": "壤塘县",
+      "year": 2022,
+      "installed_capacity_kw": 17400,
+      "utilization_hours": 1160,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "四川",
+      "city": "阿坝",
+      "county": "壤塘县",
+      "year": 2023,
+      "installed_capacity_kw": 20800,
+      "utilization_hours": 1190,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "四川",
+      "city": "阿坝",
+      "county": "壤塘县",
+      "year": 2024,
+      "installed_capacity_kw": 25100,
+      "utilization_hours": 1220,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "甘肃",
+      "city": "武威",
+      "county": "古浪县",
+      "year": 2022,
+      "installed_capacity_kw": 26600,
+      "utilization_hours": 1580,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "甘肃",
+      "city": "武威",
+      "county": "古浪县",
+      "year": 2023,
+      "installed_capacity_kw": 31400,
+      "utilization_hours": 1620,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "甘肃",
+      "city": "武威",
+      "county": "古浪县",
+      "year": 2024,
+      "installed_capacity_kw": 36800,
+      "utilization_hours": 1660,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "青海",
+      "city": "海东",
+      "county": "互助土族自治县",
+      "year": 2022,
+      "installed_capacity_kw": 28900,
+      "utilization_hours": 1680,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "青海",
+      "city": "海东",
+      "county": "互助土族自治县",
+      "year": 2023,
+      "installed_capacity_kw": 33800,
+      "utilization_hours": 1710,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "青海",
+      "city": "海东",
+      "county": "互助土族自治县",
+      "year": 2024,
+      "installed_capacity_kw": 39200,
+      "utilization_hours": 1740,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "河北",
+      "city": "张家口",
+      "county": "张北县",
+      "year": 2022,
+      "installed_capacity_kw": 23200,
+      "utilization_hours": 1450,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "河北",
+      "city": "张家口",
+      "county": "张北县",
+      "year": 2023,
+      "installed_capacity_kw": 27900,
+      "utilization_hours": 1490,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "河北",
+      "city": "张家口",
+      "county": "张北县",
+      "year": 2024,
+      "installed_capacity_kw": 32600,
+      "utilization_hours": 1530,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "河南",
+      "city": "洛阳",
+      "county": "汝阳县",
+      "year": 2022,
+      "installed_capacity_kw": 19800,
+      "utilization_hours": 1190,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "河南",
+      "city": "洛阳",
+      "county": "汝阳县",
+      "year": 2023,
+      "installed_capacity_kw": 24100,
+      "utilization_hours": 1220,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "河南",
+      "city": "洛阳",
+      "county": "汝阳县",
+      "year": 2024,
+      "installed_capacity_kw": 28500,
+      "utilization_hours": 1250,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "山东",
+      "city": "临沂",
+      "county": "沂南县",
+      "year": 2022,
+      "installed_capacity_kw": 20500,
+      "utilization_hours": 1260,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "山东",
+      "city": "临沂",
+      "county": "沂南县",
+      "year": 2023,
+      "installed_capacity_kw": 24800,
+      "utilization_hours": 1290,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "山东",
+      "city": "临沂",
+      "county": "沂南县",
+      "year": 2024,
+      "installed_capacity_kw": 29400,
+      "utilization_hours": 1320,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "湖南",
+      "city": "湘西",
+      "county": "花垣县",
+      "year": 2022,
+      "installed_capacity_kw": 18700,
+      "utilization_hours": 1120,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "湖南",
+      "city": "湘西",
+      "county": "花垣县",
+      "year": 2023,
+      "installed_capacity_kw": 22900,
+      "utilization_hours": 1150,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    },
+    {
+      "province": "湖南",
+      "city": "湘西",
+      "county": "花垣县",
+      "year": 2024,
+      "installed_capacity_kw": 27100,
+      "utilization_hours": 1180,
+      "source": "seed_estimated",
+      "remark": "用于系统联调的估算数据，后续可替换为真实统计数据"
+    }
+  ]
+}

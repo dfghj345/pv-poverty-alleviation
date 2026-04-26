@@ -103,10 +103,19 @@ class CostTable(Base):
 
 class GenerationTable(Base):
     __tablename__ = "generation_table"
+    __table_args__ = (
+        UniqueConstraint("province", "city", "county", "year", name="uq_generation_region_year"),
+        Index("ix_generation_region_year", "province", "city", "county", "year"),
+    )
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     project_name: Mapped[str] = mapped_column(String(200), nullable=False)
     province: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    city: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    county: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    year: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    installed_capacity_kw: Mapped[float | None] = mapped_column(Numeric(14, 3), nullable=True)
+    utilization_hours: Mapped[float | None] = mapped_column(Numeric(10, 3), nullable=True)
     capacity_kw: Mapped[float | None] = mapped_column(Numeric(14, 3), nullable=True)
     annual_generation_kwh: Mapped[float | None] = mapped_column(Numeric(18, 3), nullable=True)
     annual_income_yuan: Mapped[float | None] = mapped_column(Numeric(18, 2), nullable=True)
@@ -114,6 +123,7 @@ class GenerationTable(Base):
     status: Mapped[str | None] = mapped_column(String(50), nullable=True)
     effective_date: Mapped[str | None] = mapped_column(String(100), nullable=True)
     source: Mapped[str] = mapped_column(String(50), nullable=False, default="generation")
+    remark: Mapped[str | None] = mapped_column(String(1000), nullable=True)
     source_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.now)
 

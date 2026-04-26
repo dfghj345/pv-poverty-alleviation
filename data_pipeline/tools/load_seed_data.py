@@ -26,16 +26,18 @@ from typing import Any, Callable, Sequence
 from data_pipeline.processors import city_location_cleaner as _city_location_cleaner  # noqa: F401
 from data_pipeline.processors import cost_cleaner as _cost_cleaner  # noqa: F401
 from data_pipeline.processors import county_region_cleaner as _county_region_cleaner  # noqa: F401
+from data_pipeline.processors import generation_cleaner as _generation_cleaner  # noqa: F401
 from data_pipeline.processors import open_meteo_radiation_processor as _open_meteo_radiation_processor  # noqa: F401
 from data_pipeline.processors import policy_tariff_cleaner as _policy_tariff_cleaner  # noqa: F401
 from data_pipeline.storage import city_location_db as _city_location_db  # noqa: F401
 from data_pipeline.storage import cost_db as _cost_db  # noqa: F401
 from data_pipeline.storage import db as _policy_db  # noqa: F401
+from data_pipeline.storage import generation_db as _generation_db  # noqa: F401
 from data_pipeline.storage import poverty_db as _poverty_db  # noqa: F401
 from data_pipeline.storage import weather_radiation_db as _weather_radiation_db  # noqa: F401
 from data_pipeline.core.context import RunContext
 from data_pipeline.core.logging import configure_logging
-from data_pipeline.db.records import WeatherRadiationRecord
+from data_pipeline.db.records import GenerationRecord, WeatherRadiationRecord
 from data_pipeline.db.session import get_engine
 from data_pipeline.registry.processors import get_processor
 from data_pipeline.registry.storages import get_storage
@@ -43,6 +45,7 @@ from data_pipeline.spiders.city_location_reference import CityLocationRawItem
 from data_pipeline.spiders.county_region_reference import CountyRegionRawItem
 from data_pipeline.spiders.policy_tariff_reference import PolicyTariffRawItem
 from data_pipeline.spiders.pv_costs import CostRawItem
+from data_pipeline.spiders.pv_generation import GenerationRawItem
 
 ROOT_DIR = Path(__file__).resolve().parents[2]
 SEED_ROOT = ROOT_DIR / 'data_pipeline' / 'seeds'
@@ -225,6 +228,37 @@ def _load_cost_rows(rows: list[dict[str, Any]], source_path: Path) -> list[CostR
     ]
 
 
+def _load_generation_rows(rows: list[dict[str, Any]], source_path: Path) -> list[GenerationRawItem]:
+    out: list[GenerationRawItem] = []
+    for row in rows:
+        province = str(row.get('province') or '').strip()
+        city = str(row.get('city') or '').strip() or None
+        county = str(row.get('county') or '').strip() or None
+        year = _opt_int(row.get('year'))
+        project_name = str(row.get('project_name') or '').strip()
+        if not project_name and province and year is not None:
+            parts = [part for part in (province, city, county) if part]
+            project_name = f"{''.join(parts)}光伏扶贫项目-{year}"
+        out.append(
+            GenerationRawItem(
+                project_name=project_name,
+                province=province or None,
+                city=city,
+                county=county,
+                year=year,
+                installed_capacity_kw=_opt_decimal(row.get('installed_capacity_kw') or row.get('capacity_kw')),
+                utilization_hours=_opt_decimal(row.get('utilization_hours')),
+                annual_generation_kwh=_opt_decimal(row.get('annual_generation_kwh')),
+                annual_income_yuan=_opt_decimal(row.get('annual_income_yuan')),
+                effective_date=str(row.get('effective_date') or '').strip() or (str(year) if year is not None else None),
+                remark=str(row.get('remark') or '').strip() or None,
+                source=str(row.get('source') or 'seed_estimated').strip() or 'seed_estimated',
+                source_url=_pick_source_url(row, source_path),
+            )
+        )
+    return out
+
+
 DATASETS: dict[str, DatasetSpec] = {
     'city_location': DatasetSpec(
         name='city_location',
@@ -265,6 +299,18 @@ DATASETS: dict[str, DatasetSpec] = {
         data_type='cost',
         default_paths=_default_paths('cost'),
         raw_loader=_load_cost_rows,
+    ),
+    'generation': DatasetSpec(
+        name='generation',
+        spider='pv_generation',
+        site='pv_generation',
+        data_type='generation',
+        default_paths=(
+            SEED_ROOT / 'generation.json',
+            SEED_ROOT / 'generation' / 'generation_seed.json',
+            SEED_ROOT / 'generation' / 'generation_seed.csv',
+        ),
+        raw_loader=_load_generation_rows,
     ),
 }
 
