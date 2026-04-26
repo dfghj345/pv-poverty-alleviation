@@ -58,6 +58,8 @@ export interface StationProperties {
   status: 'planning' | 'constructing' | 'operating';
   built_year?: number;
   province?: string;
+  city?: string;
+  source?: string;
 }
 
 export interface PowerStationFeature {

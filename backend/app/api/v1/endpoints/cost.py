@@ -2,15 +2,17 @@
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import select
 
+from app.core.logging import get_logger
 from app.schemas.cost import CostOut
 from app.schemas.response import Result
 from app.services.pipeline_reader import get_pipeline_engine, get_pipeline_tables
 from app.services.region_query import province_equals
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 
 @router.get('/costs', response_model=Result[List[CostOut]])
@@ -32,8 +34,12 @@ async def list_costs(
     ).limit(5000)
 
     engine = get_pipeline_engine()
-    async with engine.connect() as conn:
-        rows = (await conn.execute(q)).all()
+    try:
+        async with engine.connect() as conn:
+            rows = (await conn.execute(q)).all()
+    except Exception as exc:
+        logger.exception('list_costs failed')
+        raise HTTPException(status_code=503, detail='Failed to load cost_table data') from exc
 
     if category:
         rows = [r for r in rows if str(r.category) == category]

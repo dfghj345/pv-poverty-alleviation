@@ -1,30 +1,37 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
-from geoalchemy2.functions import ST_X, ST_Y
+from typing import Any
 
+from fastapi import APIRouter, Depends, HTTPException
+from geoalchemy2.functions import ST_X, ST_Y
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.logging import get_logger
 from app.db.session import get_db
-from app.models.project import Project, Policy
+from app.models.project import Policy, Project
 from app.schemas.project_detail import ProjectDetailOut
 from app.schemas.response import Result
 from app.services.projects import build_projects_page, build_pv_summary
 
 router = APIRouter()
+logger = get_logger(__name__)
 
-@router.get("/summary")
+
+@router.get("/summary", response_model=Result[dict[str, Any]])
 async def get_pv_summary(db: AsyncSession = Depends(get_db)):
     real_data = await build_pv_summary(db)
     return Result.success(data=real_data)
 
-# 前端历史路径兼容（frontend/src/api/project.ts 使用 /projects/dashboard-stats）
-@router.get("/dashboard-stats")
+
+@router.get("/dashboard-stats", response_model=Result[dict[str, Any]])
 async def get_dashboard_stats(db: AsyncSession = Depends(get_db)):
+    # Keep the historical frontend path compatible.
     real_data = await build_pv_summary(db)
     return Result.success(data=real_data)
 
-@router.get("/")
+
+@router.get("/", response_model=Result[dict[str, Any]])
 async def list_projects(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
@@ -36,7 +43,7 @@ async def list_projects(
 
 @router.get("/{project_id}", response_model=Result[ProjectDetailOut])
 async def get_project_detail(project_id: int, db: AsyncSession = Depends(get_db)):
-    q = (
+    query = (
         select(
             Project.id,
             Project.name,
@@ -49,10 +56,18 @@ async def get_project_detail(project_id: int, db: AsyncSession = Depends(get_db)
         .join(Policy, Project.policy_id == Policy.id)
         .where(Project.id == project_id)
     )
-    r = await db.execute(q)
-    row = r.first()
-    if not row:
-        raise HTTPException(status_code=404, detail="项目不存在")
+
+    try:
+        result = await db.execute(query)
+        row = result.first()
+    except Exception as exc:
+        await db.rollback()
+        logger.warning('project detail query failed', extra={'project_id': project_id, 'error': str(exc)})
+        raise HTTPException(status_code=503, detail='Project detail data is not available') from exc
+
+    if row is None:
+        raise HTTPException(status_code=404, detail='Project not found')
+
     return Result.success(
         data=ProjectDetailOut(
             id=int(row.id),

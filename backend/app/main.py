@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -54,7 +55,23 @@ async def http_exception_handler(_request: Request, exc: StarletteHTTPException)
         content=Result.error(
             code=int(exc.status_code),
             message=exc.detail if isinstance(exc.detail, str) else 'Request Error',
-        ).model_dump(),
+        ).model_dump(by_alias=True),
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_request: Request, exc: RequestValidationError):
+    errors = exc.errors()
+    message = 'Request validation failed'
+    if errors:
+        first = errors[0]
+        location = '.'.join(str(item) for item in first.get('loc', []) if item != 'body')
+        error_text = first.get('msg', 'Invalid request')
+        message = f'{location}: {error_text}' if location else str(error_text)
+
+    return JSONResponse(
+        status_code=422,
+        content=Result.error(code=422, message=message).model_dump(by_alias=True),
     )
 
 
@@ -67,10 +84,10 @@ async def global_exception_handler(_request: Request, exc: Exception):
         content=Result.error(
             code=500,
             message=f'Internal Server Error: {str(exc)}' if settings.DEBUG else 'Internal Server Error',
-        ).model_dump(),
+        ).model_dump(by_alias=True),
     )
 
 
 @app.get('/health', tags=['System'])
 async def health_check():
-    return Result.success(data={'status': 'healthy'}).model_dump()
+    return Result.success(data={'status': 'healthy'}).model_dump(by_alias=True)

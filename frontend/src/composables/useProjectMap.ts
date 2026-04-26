@@ -1,10 +1,33 @@
-﻿import { ref, onMounted } from 'vue';
+import { onMounted, ref } from 'vue';
+
+import { getRegionLocationsApi, reverseRegionByCoordinateApi } from '@/api/region';
 import { useProjectStore } from '@/store/project';
-import { getProjectListApi } from '@/api/project';
-import { reverseRegionByCoordinateApi } from '@/api/region';
 import type { PowerStationFeature } from '@/api/types';
 
 export type FeatureCollection = { type: 'FeatureCollection'; features: PowerStationFeature[] };
+
+function buildLocationFeature(item: {
+  province: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+  source: string;
+}): PowerStationFeature {
+  return {
+    type: 'Feature',
+    geometry: { type: 'Point', coordinates: [item.longitude, item.latitude] },
+    properties: {
+      site_id: `${item.province}${item.city}`,
+      address: `${item.province} ${item.city}`,
+      area_sqm: 0,
+      installed_capacity: 0,
+      status: 'planning',
+      province: item.province,
+      city: item.city,
+      source: item.source,
+    },
+  };
+}
 
 export function useProjectMap() {
   const projectStore = useProjectStore();
@@ -12,24 +35,14 @@ export function useProjectMap() {
 
   async function loadMapFeatures(): Promise<void> {
     try {
-      const res = await getProjectListApi(0, 1000);
-
-      const features: PowerStationFeature[] = res.items.map(item => ({
-        type: 'Feature',
-        geometry: { type: 'Point', coordinates: [item.longitude, item.latitude] },
-        properties: {
-          project_id: item.id,
-          site_id: item.name,
-          address: '详见后台记录',
-          area_sqm: 0,
-          installed_capacity: item.capacity,
-          status: 'operating'
-        }
-      }));
-
-      mapData.value = { type: 'FeatureCollection', features };
+      const locations = await getRegionLocationsApi({ limit: 1000 });
+      mapData.value = {
+        type: 'FeatureCollection',
+        features: locations.map(buildLocationFeature),
+      };
     } catch (error) {
-      console.error('获取项目地图点位失败:', error);
+      console.error('获取地图真实点位失败:', error);
+      mapData.value = { type: 'FeatureCollection', features: [] };
     }
   }
 
@@ -49,7 +62,7 @@ export function useProjectMap() {
       province = location?.province ?? null;
       city = location?.city ?? null;
     } catch {
-      // reverse lookup fail does not block map point selection
+      // Reverse lookup failure should not block manual point selection.
     }
 
     projectStore.setSelectedMapPoint({

@@ -6,12 +6,14 @@ from typing import List, Optional
 from fastapi import APIRouter, HTTPException, Query
 from sqlalchemy import and_, desc, select
 
+from app.core.logging import get_logger
 from app.schemas.response import Result
 from app.schemas.weather import WeatherRadiationOut
 from app.services.pipeline_reader import get_pipeline_engine, get_pipeline_tables
 from app.services.region_query import resolve_nearest_weather_coordinate
 
 router = APIRouter()
+logger = get_logger(__name__)
 
 
 @router.get('/weather/radiation', response_model=Result[List[WeatherRadiationOut]])
@@ -90,8 +92,12 @@ async def get_weather_radiation(
     )
 
     engine = get_pipeline_engine()
-    async with engine.connect() as conn:
-        rows = (await conn.execute(q)).all()
+    try:
+        async with engine.connect() as conn:
+            rows = (await conn.execute(q)).all()
+    except Exception as exc:
+        logger.exception('get_weather_radiation failed')
+        raise HTTPException(status_code=503, detail='Failed to load weather_radiation_table data') from exc
 
     out: List[WeatherRadiationOut] = []
     for r in rows:
