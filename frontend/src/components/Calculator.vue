@@ -3,23 +3,42 @@ import { computed } from 'vue';
 import { useROICalculator } from '@/composables/useROICalculator';
 import { useROIChart } from '@/composables/useROIChart';
 
-const { form, loading, errorMsg, result, submit, hasResult, buttonLabel, chartData, lastAppliedPolicy, lastAppliedWeather } = useROICalculator();
+const {
+  form,
+  calculating,
+  errorMsg,
+  result,
+  submit,
+  hasResult,
+  hasAutoFillSelection,
+  buttonLabel,
+  chartData,
+  lastAppliedPolicy,
+  lastAppliedWeather,
+} = useROICalculator();
 const { chartRef } = useROIChart(() => chartData.value);
 
 const irrDisplay = computed(() => (result.value?.irr != null ? (result.value.irr * 100).toFixed(2) + '%' : '—'));
 const npvDisplay = computed(() => result.value?.npv?.toFixed(2) ?? '—');
+const lcoeDisplay = computed(() => result.value?.lcoe?.toFixed(4) ?? '—');
 </script>
 
 <template>
   <div class="bg-gray-50 dark:bg-dark-bg rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
-    
     <div class="lg:col-span-5 space-y-5">
       <div class="flex items-center gap-2 mb-6">
         <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
         <h2 class="text-xl font-bold text-gray-900 dark:text-dark-text">参数配置</h2>
       </div>
 
-      <div class="grid grid-cols-2 gap-4">
+      <div
+        v-if="!hasAutoFillSelection"
+        class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/60"
+      >
+        请选择地图聚合数据后可自动填参，也可以手动输入参数进行测算。
+      </div>
+
+      <form class="grid grid-cols-2 gap-4" @submit.prevent="submit">
         <div>
           <label class="block text-sm font-medium text-gray-700 dark:text-dark-text/80 mb-1">装机容量 (kW)</label>
           <input v-model.number="form.capacity_kw" type="number" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white dark:bg-dark-card dark:text-dark-text" />
@@ -53,15 +72,15 @@ const npvDisplay = computed(() => result.value?.npv?.toFixed(2) ?? '—');
           <label class="block text-sm font-medium text-gray-700 dark:text-dark-text/80 mb-1">贷款比例</label>
           <input v-model.number="form.loan_ratio" type="number" step="0.1" class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition-colors bg-white dark:bg-dark-card dark:text-dark-text" />
         </div>
-      </div>
 
-      <button :disabled="loading" @click="submit" class="mt-6 w-full py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors shadow-md flex justify-center items-center gap-2 disabled:opacity-70">
-        <svg v-if="loading" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+        <button type="submit" :disabled="calculating" class="col-span-2 mt-2 w-full py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 transition-colors shadow-md flex justify-center items-center gap-2 disabled:opacity-70">
+        <svg v-if="calculating" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>
         {{ buttonLabel }}
-      </button>
+        </button>
+      </form>
 
       <div v-if="errorMsg" class="mt-3 text-sm text-red-600 dark:text-red-400">
         {{ errorMsg }}
@@ -75,6 +94,10 @@ const npvDisplay = computed(() => result.value?.npv?.toFixed(2) ?? '—');
         <div class="flex justify-between">
           <span class="text-gray-600 dark:text-dark-text/80">净现值 (NPV)</span>
           <span class="text-cyan-500 font-mono font-bold">¥{{ npvDisplay }}</span>
+        </div>
+        <div class="mt-2 flex justify-between">
+          <span class="text-gray-600 dark:text-dark-text/80">平准化度电成本 (LCOE)</span>
+          <span class="text-slate-700 font-mono font-bold dark:text-dark-text">{{ lcoeDisplay }}</span>
         </div>
       </div>
     </div>
