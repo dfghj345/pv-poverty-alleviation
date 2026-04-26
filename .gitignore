@@ -54,3 +54,8 @@ dist-ssr
 
 # 日志文件
 *.log
+
+# 临时验证输出
+compile_out.txt
+pipeline_out.txt
+temp_count.py
