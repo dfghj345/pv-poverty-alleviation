@@ -90,6 +90,42 @@ export interface CalcResultData {
   yearly_details: YearlyDetail[];
 }
 
+export interface GenerationRecord {
+  province: string;
+  city?: string | null;
+  county?: string | null;
+  year: number;
+  installed_capacity_kw?: number | null;
+  annual_generation_kwh?: number | null;
+  annual_income_yuan?: number | null;
+  utilization_hours?: number | null;
+  source: string;
+  remark?: string | null;
+}
+
+export interface GenerationTrendItem {
+  year: number;
+  installed_capacity_kw: number;
+  annual_generation_kwh: number;
+  annual_income_yuan: number;
+}
+
+export interface GenerationProvinceDistributionItem {
+  name: string;
+  value: number;
+}
+
+export interface GenerationSummary {
+  total_installed_capacity_kw: number;
+  total_annual_generation_kwh: number;
+  total_annual_income_yuan: number;
+  province_count: number;
+  city_count: number;
+  county_count: number;
+  yearly_trend: GenerationTrendItem[];
+  province_distribution: GenerationProvinceDistributionItem[];
+}
+
 export interface PolicyRecord {
   id: number;
   province: string;

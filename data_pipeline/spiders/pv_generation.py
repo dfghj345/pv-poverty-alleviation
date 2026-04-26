@@ -158,6 +158,9 @@ def _load_seed_file(path: Path, *, log, warn_missing: bool = False) -> list[dict
     try:
         payload = json.loads(path.read_text(encoding="utf-8-sig"))
         items = _coerce_payload_items(payload)
+        for item in items:
+            if not item.get('source'):
+                item['source'] = 'seed_estimated'
         if items:
             log.info("loaded generation seed file", extra={"path": str(path), "count": len(items)})
         return items

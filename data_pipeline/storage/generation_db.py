@@ -48,8 +48,8 @@ class GenerationStorage(BaseStorage[GenerationRecord]):
         errors: List[ErrorDetail] = []
 
         async with AsyncSessionLocal() as session:
-            tariff_map = await _load_feed_in_tariffs(session)
             async with session.begin():
+                tariff_map = await _load_feed_in_tariffs(session)
                 for idx, item in enumerate(items):
                     try:
                         hydrated = _hydrate_record(item, tariff_map)

@@ -1,8 +1,11 @@
 <script setup lang="ts">
-import { markRaw, onMounted, onUnmounted, ref } from 'vue';
+import { markRaw, onMounted, onUnmounted, ref, computed } from 'vue';
 import * as echarts from 'echarts';
 
-import { getDashboardStatsApi, type DashboardStats } from '@/api/project';
+import {
+  getGenerationSummaryApi,
+  type GenerationSummary,
+} from '@/api/generation';
 import AutoFillPanel from '@/components/AutoFillPanel.vue';
 import CostPanel from '@/components/CostPanel.vue';
 import GenerationPanel from '@/components/GenerationPanel.vue';
@@ -11,13 +14,14 @@ import PovertyPanel from '@/components/PovertyPanel.vue';
 import WeatherRadiationPanel from '@/components/WeatherRadiationPanel.vue';
 import { useProjectStore } from '@/store/project';
 
-const stats = ref<DashboardStats>({
-  total_capacity_mw: 0,
-  annual_generation_yi: 0,
-  farmers_benefited: 0,
-  carbon_reduction_wt: 0,
-  revenue_years: ['1年', '5年', '10年', '15年', '20年'],
-  revenue_data: [0, 0, 0, 0, 0],
+const stats = ref<GenerationSummary>({
+  total_installed_capacity_kw: 0,
+  total_annual_generation_kwh: 0,
+  total_annual_income_yuan: 0,
+  province_count: 0,
+  city_count: 0,
+  county_count: 0,
+  yearly_trend: [],
   province_distribution: [],
 });
 
@@ -28,6 +32,13 @@ const pieChartRef = ref<HTMLElement | null>(null);
 const charts: echarts.ECharts[] = [];
 const isDarkTheme = ref(document.documentElement.classList.contains('dark'));
 const projectStore = useProjectStore();
+
+const noGenerationData = computed(
+  () =>
+    stats.value.total_installed_capacity_kw === 0 &&
+    stats.value.total_annual_generation_kwh === 0 &&
+    stats.value.total_annual_income_yuan === 0,
+);
 
 let observer: MutationObserver | null = null;
 
@@ -43,12 +54,12 @@ async function fetchDashboardData(): Promise<void> {
   loading.value = true;
   errorMsg.value = null;
   try {
-    const data = await getDashboardStatsApi();
+    const data = await getGenerationSummaryApi();
     stats.value = data;
     initCharts();
   } catch (error) {
-    console.error('加载看板统计数据失败', error);
-    errorMsg.value = error instanceof Error ? error.message : '加载看板统计数据失败';
+    console.error('加载发电摘要数据失败', error);
+    errorMsg.value = error instanceof Error ? error.message : '加载发电摘要数据失败';
   } finally {
     loading.value = false;
   }
@@ -58,38 +69,70 @@ function initCharts(): void {
   charts.forEach((chart) => chart.dispose());
   charts.length = 0;
 
+  if (noGenerationData.value) {
+    return;
+  }
+
   const textColor = isDarkTheme.value ? '#F9FAFB' : '#1F2937';
   const splitLineColor = isDarkTheme.value ? '#374151' : '#E5E7EB';
+
+  const years = stats.value.yearly_trend.map((item) => item.year);
+  const installedData = stats.value.yearly_trend.map((item) => item.installed_capacity_kw);
+  const generationData = stats.value.yearly_trend.map((item) => item.annual_generation_kwh);
+  const incomeData = stats.value.yearly_trend.map((item) => item.annual_income_yuan / 100000000);
 
   if (lineChartRef.value) {
     const chart = markRaw(echarts.init(lineChartRef.value));
     chart.setOption({
       backgroundColor: 'transparent',
       tooltip: { trigger: 'axis' },
-      grid: { left: '5%', right: '5%', bottom: '10%', top: '15%', containLabel: true },
+      legend: {
+        top: '8%',
+        textStyle: { color: textColor },
+      },
+      grid: { left: '5%', right: '10%', bottom: '12%', top: '18%', containLabel: true },
       xAxis: {
         type: 'category',
-        data: stats.value.revenue_years,
+        data: years,
         axisLabel: { color: textColor },
         axisLine: { lineStyle: { color: splitLineColor } },
       },
-      yAxis: {
-        type: 'value',
-        axisLabel: { color: textColor },
-        splitLine: { lineStyle: { color: splitLineColor } },
-      },
+      yAxis: [
+        {
+          type: 'value',
+          name: '装机(kW)/发电(kWh)',
+          axisLabel: { color: textColor },
+          splitLine: { lineStyle: { color: splitLineColor } },
+        },
+        {
+          type: 'value',
+          name: '年收益(亿元)',
+          axisLabel: { color: textColor },
+          splitLine: { show: false },
+        },
+      ],
       series: [
         {
-          data: stats.value.revenue_data,
+          name: '装机容量(kW)',
+          data: installedData,
           type: 'line',
           smooth: true,
           color: '#10b981',
-          areaStyle: {
-            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: 'rgba(16, 185, 129, 0.3)' },
-              { offset: 1, color: 'rgba(16, 185, 129, 0.05)' },
-            ]),
-          },
+        },
+        {
+          name: '年发电量(kWh)',
+          data: generationData,
+          type: 'line',
+          smooth: true,
+          color: '#06b6d4',
+        },
+        {
+          name: '年收益(亿元)',
+          data: incomeData,
+          type: 'line',
+          smooth: true,
+          yAxisIndex: 1,
+          color: '#f59e0b',
         },
       ],
     });
@@ -104,7 +147,7 @@ function initCharts(): void {
       legend: { top: '5%', left: 'center', textStyle: { color: textColor } },
       series: [
         {
-          name: '省份占比',
+          name: '省份装机',
           type: 'pie',
           radius: ['40%', '70%'],
           center: ['50%', '60%'],
@@ -155,40 +198,44 @@ onUnmounted(() => {
       <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-6 shadow-sm border border-emerald-100 dark:border-emerald-800/30 card-hover">
         <p class="text-gray-600 dark:text-dark-text/70 text-sm font-medium">总装机容量</p>
         <h3 class="text-3xl font-bold text-gray-900 dark:text-dark-text mt-2">
-          {{ stats.total_capacity_mw }}<span class="text-lg text-emerald-500 ml-1">MW</span>
+          {{ (stats.total_installed_capacity_kw / 1000).toFixed(2) }}<span class="text-lg text-emerald-500 ml-1">MW</span>
         </h3>
       </div>
       <div class="bg-cyan-50 dark:bg-cyan-900/20 rounded-xl p-6 shadow-sm border border-cyan-100 dark:border-cyan-800/30 card-hover">
         <p class="text-gray-600 dark:text-dark-text/70 text-sm font-medium">年发电量</p>
         <h3 class="text-3xl font-bold text-gray-900 dark:text-dark-text mt-2">
-          {{ stats.annual_generation_yi }}<span class="text-lg text-cyan-500 ml-1">亿度</span>
+          {{ (stats.total_annual_generation_kwh / 100000000).toFixed(2) }}<span class="text-lg text-cyan-500 ml-1">亿度</span>
         </h3>
       </div>
       <div class="bg-amber-50 dark:bg-amber-900/20 rounded-xl p-6 shadow-sm border border-amber-100 dark:border-amber-800/30 card-hover">
-        <p class="text-gray-600 dark:text-dark-text/70 text-sm font-medium">覆盖人口</p>
+        <p class="text-gray-600 dark:text-dark-text/70 text-sm font-medium">年收益</p>
         <h3 class="text-3xl font-bold text-gray-900 dark:text-dark-text mt-2">
-          {{ stats.farmers_benefited }}<span class="text-lg text-amber-500 ml-1">人</span>
+          {{ (stats.total_annual_income_yuan / 100000000).toFixed(2) }}<span class="text-lg text-amber-500 ml-1">亿元</span>
         </h3>
       </div>
       <div class="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl p-6 shadow-sm border border-emerald-100 dark:border-emerald-800/30 card-hover">
-        <p class="text-gray-600 dark:text-dark-text/70 text-sm font-medium">年减排量</p>
+        <p class="text-gray-600 dark:text-dark-text/70 text-sm font-medium">覆盖省份</p>
         <h3 class="text-3xl font-bold text-gray-900 dark:text-dark-text mt-2">
-          {{ stats.carbon_reduction_wt }}<span class="text-lg text-emerald-500 ml-1">万吨</span>
+          {{ stats.province_count }}<span class="text-lg text-emerald-500 ml-1">个</span>
         </h3>
       </div>
     </div>
 
     <div v-if="loading" class="mb-6 text-sm text-gray-500 dark:text-dark-text/60">
-      正在加载看板数据...
+      正在加载发电摘要数据...
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <div v-if="!loading && noGenerationData" class="mb-6 text-sm text-gray-500 dark:text-dark-text/60">
+      暂无发电测算数据，请运行 data_pipeline 并确认 /v1/generation/summary 接口可用。
+    </div>
+
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div class="bg-white dark:bg-dark-card rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-800">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-dark-text mb-2">20 年收益走势</h3>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-dark-text mb-2">年度发电趋势</h3>
         <div ref="lineChartRef" class="w-full h-72"></div>
       </div>
       <div class="bg-white dark:bg-dark-card rounded-xl p-6 shadow-md border border-gray-100 dark:border-gray-800">
-        <h3 class="text-xl font-bold text-gray-900 dark:text-dark-text mb-2">省份分布</h3>
+        <h3 class="text-xl font-bold text-gray-900 dark:text-dark-text mb-2">省份装机分布</h3>
         <div ref="pieChartRef" class="w-full h-72"></div>
       </div>
     </div>

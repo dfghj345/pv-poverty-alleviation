@@ -42,3 +42,8 @@ class GenerationSummaryOut(BaseModel):
         default_factory=list,
         description="Installed capacity distribution by province",
     )
+
+
+class GenerationOut(GenerationRecordOut):
+    """兼容旧接口的 generation record 输出类型"""
+    pass
