@@ -9,11 +9,28 @@ export interface PolicyTariffItem {
   source_url?: string | null;
 }
 
+export interface EnergyPolicyItem {
+  title: string;
+  url: string;
+  publish_date?: string | null;
+  summary?: string | null;
+  source: string;
+  source_url?: string | null;
+}
+
 export function getPoliciesApi(params?: { province?: string; limit?: number }): Promise<PolicyTariffItem[]> {
   return request({
     url: '/policies',
     method: 'get',
     params
   }) as Promise<PolicyTariffItem[]>;
+}
+
+export function getEnergyPoliciesApi(params?: { keyword?: string; limit?: number }): Promise<EnergyPolicyItem[]> {
+  return request({
+    url: '/energy-policies',
+    method: 'get',
+    params
+  }) as Promise<EnergyPolicyItem[]>;
 }
 

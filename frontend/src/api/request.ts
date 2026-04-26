@@ -46,7 +46,8 @@ request.interceptors.response.use(
     if (body && typeof body === 'object' && 'data' in body) {
       const status = (body as any).status;
       const code = (body as any).code;
-      if (status === 'success' || code === 200) {
+      const success = (body as any).success;
+      if (success === true || status === 'success' || code === 200) {
         return (body as any).data as AxiosResponse['data'];
       }
     }

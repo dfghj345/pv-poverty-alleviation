@@ -3,7 +3,7 @@ import { computed } from 'vue';
 import { useROICalculator } from '@/composables/useROICalculator';
 import { useROIChart } from '@/composables/useROIChart';
 
-const { form, loading, result, submit, hasResult, buttonLabel, chartData, lastAppliedPolicy, lastAppliedWeather } = useROICalculator();
+const { form, loading, errorMsg, result, submit, hasResult, buttonLabel, chartData, lastAppliedPolicy, lastAppliedWeather } = useROICalculator();
 const { chartRef } = useROIChart(() => chartData.value);
 
 const irrDisplay = computed(() => (result.value?.irr != null ? (result.value.irr * 100).toFixed(2) + '%' : '—'));
@@ -62,6 +62,10 @@ const npvDisplay = computed(() => result.value?.npv?.toFixed(2) ?? '—');
         </svg>
         {{ buttonLabel }}
       </button>
+
+      <div v-if="errorMsg" class="mt-3 text-sm text-red-600 dark:text-red-400">
+        {{ errorMsg }}
+      </div>
 
       <div v-if="hasResult" class="mt-6 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-100 dark:border-emerald-800/30">
         <div class="flex justify-between mb-2">

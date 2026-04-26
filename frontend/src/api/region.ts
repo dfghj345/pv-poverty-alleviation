@@ -34,6 +34,14 @@ export function getRegionLocationApi(params: { province: string; city: string })
   }) as Promise<RegionLocation | null>;
 }
 
+export function getRegionLocationsApi(params?: { province?: string; limit?: number }): Promise<RegionLocation[]> {
+  return request({
+    url: '/regions/locations',
+    method: 'get',
+    params
+  }) as Promise<RegionLocation[]>;
+}
+
 export function getRegionWeatherLocationApi(params: { province: string; city: string }): Promise<RegionLocation | null> {
   return request({
     url: '/regions/weather-location',

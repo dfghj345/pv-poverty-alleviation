@@ -1,6 +1,6 @@
 ﻿<script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
-import { getPoliciesApi, type PolicyTariffItem } from '@/api/policy';
+import { getEnergyPoliciesApi, getPoliciesApi, type EnergyPolicyItem, type PolicyTariffItem } from '@/api/policy';
 import { getRegionProvincesApi } from '@/api/region';
 
 const emit = defineEmits<{
@@ -16,6 +16,7 @@ const loading = ref(false);
 const loadingProvinces = ref(false);
 const errorMsg = ref<string | null>(null);
 const rows = ref<PolicyTariffItem[]>([]);
+const energyRows = ref<EnergyPolicyItem[]>([]);
 
 const totalShown = computed(() => rows.value.length);
 
@@ -45,11 +46,21 @@ async function query(): Promise<void> {
       limit: limit.value
     });
     rows.value = data;
+    await loadEnergyPolicies();
   } catch (e: any) {
     errorMsg.value = e?.message ?? '查询失败';
     rows.value = [];
+    energyRows.value = [];
   } finally {
     loading.value = false;
+  }
+}
+
+async function loadEnergyPolicies(): Promise<void> {
+  try {
+    energyRows.value = await getEnergyPoliciesApi({ limit: 10 });
+  } catch {
+    energyRows.value = [];
   }
 }
 
@@ -60,6 +71,7 @@ function apply(row: PolicyTariffItem): void {
 
 onMounted(async () => {
   await loadProvinces();
+  await loadEnergyPolicies();
 });
 </script>
 
@@ -146,6 +158,29 @@ onMounted(async () => {
           </tr>
         </tbody>
       </table>
+    </div>
+
+    <div class="mt-5 rounded-lg border border-gray-100 dark:border-gray-800 overflow-hidden">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-dark-bg text-sm font-medium text-gray-700 dark:text-dark-text/80">
+        国家能源局政策动态（energy_policy_table）
+      </div>
+      <div class="divide-y divide-gray-100 dark:divide-gray-800">
+        <a
+          v-for="item in energyRows"
+          :key="item.url"
+          :href="item.url"
+          target="_blank"
+          class="block px-4 py-3 hover:bg-gray-50 dark:hover:bg-dark-bg"
+        >
+          <div class="text-sm text-gray-900 dark:text-dark-text line-clamp-1">{{ item.title }}</div>
+          <div class="mt-1 text-xs text-gray-500 dark:text-dark-text/60">
+            {{ item.publish_date ?? '未知日期' }} · {{ item.source }}
+          </div>
+        </a>
+        <div v-if="energyRows.length === 0" class="px-4 py-4 text-sm text-gray-500 dark:text-dark-text/60">
+          暂无政策动态。请先运行 energy_gov 爬虫并入库。
+        </div>
+      </div>
     </div>
   </div>
 </template>

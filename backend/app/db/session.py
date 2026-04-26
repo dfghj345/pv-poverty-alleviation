@@ -1,8 +1,12 @@
+import logging
+
 from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.core.config import settings
 from app.models.project import Base
+
+logger = logging.getLogger(__name__)
 
 # Main application database engine.
 engine = create_async_engine(
@@ -35,9 +39,12 @@ async def get_db():
 
 
 async def initialize_database() -> None:
-    async with engine.begin() as conn:
-        await conn.execute(text('CREATE EXTENSION IF NOT EXISTS postgis;'))
-        await conn.run_sync(Base.metadata.create_all)
+    try:
+        async with engine.begin() as conn:
+            await conn.execute(text('CREATE EXTENSION IF NOT EXISTS postgis;'))
+            await conn.run_sync(Base.metadata.create_all)
+    except Exception as exc:
+        logger.warning('main application database initialization skipped', extra={'error': str(exc)})
 
 
 async def dispose_database() -> None:

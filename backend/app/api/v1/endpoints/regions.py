@@ -8,6 +8,7 @@ from app.schemas.region import RegionLocationOut
 from app.schemas.response import Result
 from app.services.region_query import (
     list_cities,
+    list_city_coordinates,
     list_provinces,
     resolve_city_by_coordinate,
     resolve_city_coordinate,
@@ -50,6 +51,26 @@ async def get_city_location(
             longitude=resolved.longitude,
             source=resolved.source,
         )
+    )
+
+
+@router.get('/regions/locations', response_model=Result[List[RegionLocationOut]])
+async def list_locations(
+    province: str | None = Query(default=None),
+    limit: int = Query(default=500, ge=1, le=2000),
+):
+    locations = await list_city_coordinates(province=province, limit=limit)
+    return Result.success(
+        data=[
+            RegionLocationOut(
+                province=item.province,
+                city=item.city,
+                latitude=item.latitude,
+                longitude=item.longitude,
+                source=item.source,
+            )
+            for item in locations
+        ]
     )
 
 

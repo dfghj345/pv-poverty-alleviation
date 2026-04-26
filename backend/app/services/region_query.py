@@ -266,6 +266,13 @@ async def resolve_city_coordinate(*, province: str, city: str) -> Optional[CityC
     return None
 
 
+async def list_city_coordinates(*, province: str | None = None, limit: int = 500) -> list[CityCoordinate]:
+    items = await _iter_all_city_coordinates()
+    if province:
+        items = [item for item in items if province_equals(item.province, province)]
+    return items[:limit]
+
+
 async def resolve_nearest_weather_coordinate(*, province: str, city: str) -> Optional[CityCoordinate]:
     """
     Resolve province/city to weather-table coordinates.
