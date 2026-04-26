@@ -4,7 +4,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 
 from app.core.config import settings
-from app.models.project import Base
+from app.models import Base
 
 logger = logging.getLogger(__name__)
 

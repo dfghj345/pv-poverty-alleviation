@@ -6,7 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.api.v1.endpoints import calculator, cost, generation, policy, poverty, projects, regions, weather
+from app.api.v1.endpoints import calculator, cost, generation, panel_data, policy, poverty, projects, regions, weather
 from app.core.config import settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import dispose_database, initialize_database
@@ -38,14 +38,20 @@ app.add_middleware(
     allow_headers=['*'],
 )
 
-app.include_router(projects.router, prefix='/v1/projects', tags=['Projects'])
-app.include_router(calculator.router, prefix='/v1/calc', tags=['Calculator'])
-app.include_router(policy.router, prefix='/v1', tags=['Policy'])
-app.include_router(weather.router, prefix='/v1', tags=['Weather'])
-app.include_router(poverty.router, prefix='/v1', tags=['Poverty'])
-app.include_router(cost.router, prefix='/v1', tags=['Cost'])
-app.include_router(generation.router, prefix='/v1', tags=['Generation'])
-app.include_router(regions.router, prefix='/v1', tags=['Regions'])
+def include_api_router(router, *, v1_prefix: str, tags: list[str]) -> None:
+    app.include_router(router, prefix=f'/v1{v1_prefix}', tags=tags)
+    app.include_router(router, prefix=f'/api/v1{v1_prefix}', tags=tags)
+
+
+include_api_router(projects.router, v1_prefix='/projects', tags=['Projects'])
+include_api_router(calculator.router, v1_prefix='/calc', tags=['Calculator'])
+include_api_router(policy.router, v1_prefix='', tags=['Policy'])
+include_api_router(weather.router, v1_prefix='', tags=['Weather'])
+include_api_router(poverty.router, v1_prefix='', tags=['Poverty'])
+include_api_router(cost.router, v1_prefix='', tags=['Cost'])
+include_api_router(generation.router, v1_prefix='', tags=['Generation'])
+include_api_router(regions.router, v1_prefix='', tags=['Regions'])
+include_api_router(panel_data.router, v1_prefix='', tags=['PanelData'])
 
 
 @app.exception_handler(StarletteHTTPException)
