@@ -78,6 +78,8 @@ class PanelDataMapItem(BaseModel):
     year: int
     value: float
     count: int
+    longitude: float = Field(..., ge=-180, le=180)
+    latitude: float = Field(..., ge=-90, le=90)
 
 
 class PanelDataMapResponse(BaseModel):

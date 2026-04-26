@@ -269,7 +269,7 @@ onMounted(async () => {
           </tr>
           <tr v-if="rows.length === 0" class="border-t border-gray-100 dark:border-gray-800">
             <td class="px-4 py-6 text-center text-gray-500 dark:text-dark-text/60" colspan="5">
-              暂无数据。请先完成数据入库，或切换省市重试。
+              暂无数据。请切换省市重试。
             </td>
           </tr>
         </tbody>

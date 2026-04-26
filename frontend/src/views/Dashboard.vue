@@ -13,7 +13,6 @@ import {
   type PanelDataStats,
 } from '@/api/panel_data';
 import { buildAggregateKey, type PanelDataMapAggregate, useProjectMap } from '@/composables/useProjectMap';
-import type { PowerStationFeature } from '@/api/types';
 
 const DataStats = defineAsyncComponent(() => import('@/components/DataStats.vue'));
 const MapView = defineAsyncComponent(() => import('@/components/MapView.vue'));
@@ -24,15 +23,12 @@ type QueryState = Required<Pick<PanelDataListParams, 'page' | 'page_size'>> & Om
 
 const {
   mapData,
-  mapAggregates,
+  mapViewport,
   selectedMapData,
   mapLoading,
   mapError,
   loadMapData,
-  handlePointClick,
   selectAggregateItem,
-  handleLocationPicked,
-  handleLocationCleared,
 } = useProjectMap();
 
 const isDark = ref(false);
@@ -250,10 +246,6 @@ async function reloadPanelData(): Promise<void> {
   ]);
 }
 
-function handleMapFeatureClick(feature: PowerStationFeature): void {
-  handlePointClick(feature);
-}
-
 function handleAggregateClick(aggregate: PanelDataMapAggregate): void {
   selectAggregateItem(aggregate);
 }
@@ -281,7 +273,6 @@ onMounted(() => {
       <div class="container mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between">
           <div class="flex items-center gap-3">
-            <span class="text-2xl font-semibold tracking-tight text-emerald-500">PV</span>
             <span class="text-lg font-semibold text-slate-900 dark:text-dark-text">光伏扶贫数据平台</span>
           </div>
           <div class="hidden items-center gap-2 md:flex">
@@ -304,14 +295,14 @@ onMounted(() => {
       <div class="container mx-auto px-4 pb-20 sm:px-6 lg:px-8">
         <div class="grid items-center gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
           <div>
-            <p class="text-sm uppercase tracking-[0.32em] text-emerald-600 dark:text-emerald-300">PV Poverty Alleviation</p>
+            <p class="text-sm uppercase tracking-[0.32em] text-emerald-600 dark:text-emerald-300">光伏扶贫数据平台</p>
             <h1 class="mt-5 max-w-3xl text-4xl font-semibold leading-tight text-slate-950 dark:text-dark-text md:text-5xl lg:text-6xl">
-              用真实面板数据
+              阳光变成收益
               <br />
-              驱动光伏扶贫研判与展示
+              光伏助力乡村振兴
             </h1>
             <p class="mt-6 max-w-2xl text-lg leading-8 text-slate-600 dark:text-dark-text/75">
-              接入 PostgreSQL 中的 panel_data 数据源，联动筛选器、地图聚合、自动填参与收益测算，快速查看省市级光伏装机和社会经济指标。
+              基于真实政策、电价、天气辐射和区域数据，联动地图展示、数据看板与收益测算，帮助我们快速验证光伏扶贫项目的落点与回报。
             </p>
             <div class="mt-8 flex flex-wrap gap-4">
               <a href="#dashboard" class="rounded-full bg-emerald-500 px-6 py-3 text-sm font-medium text-white shadow-lg shadow-emerald-500/20 transition hover:bg-emerald-600">
@@ -378,15 +369,12 @@ onMounted(() => {
 
         <div class="rounded-[32px] border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-dark-card">
           <MapView
-            :points="mapData"
-            :aggregates="mapAggregates"
+            :items="mapData"
             :selected-key="selectedMapData ? buildAggregateKey(selectedMapData) : null"
+            :viewport="mapViewport"
             :loading="mapLoading"
             :error-message="mapError"
-            @point-click="handleMapFeatureClick"
             @aggregate-click="handleAggregateClick"
-            @location-picked="handleLocationPicked"
-            @location-cleared="handleLocationCleared"
           />
         </div>
       </div>

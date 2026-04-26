@@ -64,6 +64,8 @@ export interface PanelDataMapItem {
   year: number;
   value: number;
   count: number;
+  longitude: number;
+  latitude: number;
 }
 
 export function getPanelDataListApi(params?: PanelDataListParams): Promise<PanelDataPage> {

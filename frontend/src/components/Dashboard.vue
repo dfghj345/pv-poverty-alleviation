@@ -57,11 +57,11 @@ onMounted(() => {
         <div class="flex flex-col md:flex-row items-center">
           <div class="md:w-1/2 mb-8 md:mb-0">
             <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-dark-text leading-tight text-shadow">
-              阳光变黄金<br>
+              阳光变成收益<br>
               <span class="text-emerald-500">光伏助力乡村振兴</span>
             </h1>
             <p class="mt-4 text-lg text-gray-700 dark:text-dark-text/80 max-w-lg">
-              光伏扶贫是创新的扶贫模式，通过在农村建设光伏发电站，将清洁能源转化为稳定收益，帮助贫困地区实现可持续发展。
+              基于真实政策、电价、天气辐射和区域数据，联动地图展示、数据看板与收益测算，帮助我们快速验证光伏扶贫项目的落点与回报。
             </p>
             <div class="mt-8 flex gap-4">
               <a href="#dashboard" class="px-6 py-3 bg-emerald-500 text-white rounded-lg font-medium hover:bg-emerald-600 shadow-md transition-colors">核心数据分析</a>
@@ -90,20 +90,6 @@ onMounted(() => {
             />
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div class="bg-white dark:bg-dark-card rounded-lg p-5 shadow-sm border border-gray-100 dark:border-gray-700 card-hover">
-              <h3 class="font-bold text-emerald-500 mb-2">云南光伏扶贫</h3>
-              <p class="text-gray-600 dark:text-dark-text/70 text-sm leading-relaxed">总装机容量突破1947.8兆瓦，年发电量约33.5亿度，年产值达8.2亿元。</p>
-            </div>
-            <div class="bg-white dark:bg-dark-card rounded-lg p-5 shadow-sm border border-gray-100 dark:border-gray-700 card-hover">
-              <h3 class="font-bold text-cyan-500 mb-2">山东沂南</h3>
-              <p class="text-gray-600 dark:text-dark-text/70 text-sm leading-relaxed">全县44.9兆瓦项目全面并网，覆盖256处电站，惠及1.1万户困难家庭。</p>
-            </div>
-            <div class="bg-white dark:bg-dark-card rounded-lg p-5 shadow-sm border border-gray-100 dark:border-gray-700 card-hover">
-              <h3 class="font-bold text-amber-500 mb-2">宁夏固原</h3>
-              <p class="text-gray-600 dark:text-dark-text/70 text-sm leading-relaxed">建成并网分布式光伏16.5万千瓦，形成产业转型、农户增收的发展格局。</p>
-            </div>
-          </div>
         </div>
       </div>
     </section>
