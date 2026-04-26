@@ -14,6 +14,7 @@ if __package__ is None:
 
 import argparse
 import asyncio
+import json
 import sys
 from time import perf_counter
 from typing import Any, Optional
@@ -73,16 +74,22 @@ async def _run_one(spider_name: str, stage: str) -> dict[str, Any]:
     t0 = perf_counter()
     rep = await runner.run(spider, processor=processor, storage=storage, stage=stage, ctx=ctx)
     err0 = rep.details.errors.all()[0].to_dict() if rep.details.errors.any() else None
-    return {
+    result = {
+        "run_id": rep.summary.run_id,
         "spider": spider_name,
         "site": rep.summary.site,
-        "stage": rep.summary.stage,
-        "status": rep.summary.status,
+        "url": rep.summary.url,
+        "stage": _public_stage(rep.summary.stage),
         "items_count": rep.summary.items_count,
         "duration_ms": rep.summary.duration_ms,
+        "error": err0,
+    }
+    return {
+        **result,
+        "status": rep.summary.status,
         "skipped_reason": rep.summary.skipped_reason,
-        "run_id": rep.summary.run_id,
-        "error_detail": err0,
+        "result": result,
+        "request_log": rep.details.meta.get("request_log"),
         "elapsed_ms_wall": int((perf_counter() - t0) * 1000),
     }
 
@@ -121,25 +128,33 @@ async def amain(argv: Optional[list[str]] = None) -> int:
         try:
             r = await _run_one(sp, args.stage)
             out.append(r)
-            print(
-                f"[{r['status'].upper()}] spider={r['spider']} site={r['site']} "
-                f"stage={r['stage']} items={r['items_count']} duration_ms={r['duration_ms']} run_id={r['run_id']}"
-                + (f" skipped_reason={r['skipped_reason']}" if r.get("skipped_reason") else "")
-            )
-            if r.get("status") == "fail" and r.get("error_detail"):
-                ed = r["error_detail"]
-                print(f"  error: stage={ed.get('stage')} type={ed.get('type')} message={ed.get('message')}")
+            if r.get("request_log"):
+                print("REQUEST " + json.dumps(r["request_log"], ensure_ascii=False, default=str))
+            if r.get("skipped_reason"):
+                print(f"WARNING spider={r['spider']} stage={r['stage']} {r['skipped_reason']}")
+            print("RESULT " + json.dumps(r["result"], ensure_ascii=False, default=str))
         except Exception as e:
-            out.append(
-                {
-                    "spider": sp,
-                    "status": "fail",
-                    "error": str(e),
-                    "traceback": traceback.format_exc(),
-                    "elapsed_ms_wall": int((perf_counter() - t0) * 1000),
-                }
-            )
+            err = {
+                "stage": _public_stage(args.stage),
+                "type": type(e).__name__,
+                "message": str(e),
+                "url": None,
+                "item_index": None,
+                "traceback_optional": traceback.format_exc(),
+            }
+            failed_result = {
+                "run_id": None,
+                "spider": sp,
+                "site": None,
+                "url": None,
+                "stage": _public_stage(args.stage),
+                "items_count": 0,
+                "duration_ms": int((perf_counter() - t0) * 1000),
+                "error": err,
+            }
+            out.append({**failed_result, "status": "fail", "result": failed_result})
             print(f"[FAIL] spider={sp} error={e}\n{traceback.format_exc()}")
+            print("RESULT " + json.dumps(failed_result, ensure_ascii=False, default=str))
 
     results = out
     ok = sum(1 for r in results if r.get("status") == "ok")
@@ -147,6 +162,14 @@ async def amain(argv: Optional[list[str]] = None) -> int:
     fail = len(results) - ok - skipped
     print(f"\n=== run summary === total={len(results)} ok={ok} skipped={skipped} fail={fail}")
     return 0 if fail == 0 else 1
+
+
+def _public_stage(stage: str) -> str:
+    if stage == "store":
+        return "store"
+    if stage in {"parse", "process"}:
+        return "parse"
+    return "crawl"
 
 
 if __name__ == "__main__":

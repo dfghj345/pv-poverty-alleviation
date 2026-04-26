@@ -39,6 +39,7 @@ class HttpClient:
                 ct = (r.headers.get("content-type") or "").lower()
                 body = r.content or b""
                 preview = body[: opt.body_preview_len].decode("utf-8", errors="replace")
+                _record_response_meta(ctx, r, body)
 
                 try:
                     r.raise_for_status()
@@ -116,6 +117,7 @@ class HttpClient:
         async with httpx.AsyncClient(timeout=timeout, headers=headers, trust_env=trust_env) as client:
             async def _call() -> bytes:
                 r = await client.get(url, params=params)
+                _record_response_meta(ctx, r, r.content or b"")
                 r.raise_for_status()
                 return r.content
 
@@ -164,4 +166,12 @@ def safe_json_dumps(obj: Any) -> str:
         return json.dumps(obj, ensure_ascii=False, default=str)
     except Exception:
         return "<unserializable>"
+
+
+def _record_response_meta(ctx: RunContext, response: httpx.Response, body: bytes) -> None:
+    ctx.meta["http_status_code"] = response.status_code
+    ctx.meta["http_final_url"] = str(response.url)
+    ctx.meta["http_content_length"] = len(body)
+    if response.request is not None:
+        ctx.meta["http_request_url"] = str(response.request.url)
 

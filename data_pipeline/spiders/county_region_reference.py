@@ -11,6 +11,7 @@ from data_pipeline.core.context import RunContext
 from data_pipeline.core.logging import get_ctx_logger
 from data_pipeline.core.request import HttpClient, RequestOptions
 from data_pipeline.registry.spiders import register_spider
+from data_pipeline.spiders.source_utils import is_placeholder_url
 
 
 @dataclass(frozen=True, slots=True)
@@ -54,9 +55,17 @@ class CountyRegionReferenceSpider(BaseSpider[dict, CountyRegionRawItem]):
 
         seed_file = _resolve_seed_file(ctx)
         if seed_file is not None:
-            local_items = _load_seed_file(seed_file, log=log)
+            local_items = _load_seed_file(seed_file, log=log, warn_missing=True)
             if local_items:
                 return {'items': local_items}
+
+        if is_placeholder_url(self._site_url):
+            default_items = _load_seed_file(DEFAULT_COUNTY_REGION_SEED_PATH, log=log, warn_missing=True)
+            if default_items:
+                log.warning('county region real data source is not configured; using seed fallback', extra={'seed_path': str(DEFAULT_COUNTY_REGION_SEED_PATH), 'url': self._site_url})
+                return {'items': default_items}
+            log.warning('county region seed fallback is missing', extra={'seed_path': str(DEFAULT_COUNTY_REGION_SEED_PATH), 'url': self._site_url})
+            return {'items': []}
 
         if self._http is not None and self._request_opt is not None and self._site_url is not None:
             try:
@@ -67,10 +76,11 @@ class CountyRegionReferenceSpider(BaseSpider[dict, CountyRegionRawItem]):
             except Exception as exc:
                 log.warning('fetch county region failed, fallback to local seed', extra={'error': str(exc)})
 
-        default_items = _load_seed_file(DEFAULT_COUNTY_REGION_SEED_PATH, log=log)
+        default_items = _load_seed_file(DEFAULT_COUNTY_REGION_SEED_PATH, log=log, warn_missing=True)
         if default_items:
             return {'items': default_items}
 
+        log.warning('county region seed fallback is missing', extra={'seed_path': str(DEFAULT_COUNTY_REGION_SEED_PATH)})
         return {'items': list(EMBEDDED_COUNTY_ITEMS)}
 
     def parse(self, raw: dict, ctx: RunContext) -> List[CountyRegionRawItem]:
@@ -117,8 +127,10 @@ def _resolve_seed_file(ctx: RunContext) -> Optional[Path]:
     return path.resolve()
 
 
-def _load_seed_file(path: Path, *, log) -> list[dict[str, Any]]:
+def _load_seed_file(path: Path, *, log, warn_missing: bool = False) -> list[dict[str, Any]]:
     if not path.exists():
+        if warn_missing:
+            log.warning('county region seed file missing', extra={'path': str(path)})
         return []
     try:
         payload = json.loads(path.read_text(encoding='utf-8-sig'))

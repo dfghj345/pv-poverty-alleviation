@@ -62,8 +62,8 @@ class PipelineSettings(BaseSettings):
         if self.DATABASE_URL is None and derived_database_url is not None:
             self.DATABASE_URL = derived_database_url
 
-        if self.PIPELINE_DATABASE_URL is None:
-            self.PIPELINE_DATABASE_URL = self.DATABASE_URL
+        if self.PIPELINE_DATABASE_URL is None and derived_database_url is not None:
+            self.PIPELINE_DATABASE_URL = derived_database_url
 
     @property
     def database_url(self) -> str:
@@ -75,8 +75,6 @@ class PipelineSettings(BaseSettings):
     def pipeline_database_url(self) -> str:
         if self.PIPELINE_DATABASE_URL is not None:
             return str(self.PIPELINE_DATABASE_URL)
-        if self.DATABASE_URL is not None:
-            return str(self.DATABASE_URL)
         raise RuntimeError("PIPELINE_DATABASE_URL is not configured")
 
 

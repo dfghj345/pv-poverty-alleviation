@@ -11,6 +11,7 @@ from data_pipeline.core.context import RunContext
 from data_pipeline.core.logging import get_ctx_logger
 from data_pipeline.core.request import HttpClient, RequestOptions
 from data_pipeline.registry.spiders import register_spider
+from data_pipeline.spiders.source_utils import is_placeholder_url
 
 
 @dataclass(frozen=True, slots=True)
@@ -35,8 +36,6 @@ class PVCostSpider(BaseSpider[dict, CostRawItem]):
     name = 'pv_costs'
     site = 'pv_costs'
     data_type = 'cost'
-    enabled = False
-    disabled_reason = 'online crawl is still placeholder-heavy; use seed import first'
 
     def __init__(self) -> None:
         self._http: HttpClient | None = None
@@ -52,9 +51,17 @@ class PVCostSpider(BaseSpider[dict, CostRawItem]):
 
         seed_file = _resolve_seed_file(ctx)
         if seed_file is not None:
-            local_items = _load_seed_file(seed_file, log=log)
+            local_items = _load_seed_file(seed_file, log=log, warn_missing=True)
             if local_items:
                 return {'items': local_items}
+
+        if _should_use_seed_fallback(self._site_url):
+            default_items = _load_seed_file(DEFAULT_COST_SEED_PATH, log=log, warn_missing=True)
+            if default_items:
+                log.warning('pv costs real data source is not configured; using seed fallback', extra={'seed_path': str(DEFAULT_COST_SEED_PATH)})
+                return {'items': default_items}
+            log.warning('pv costs seed fallback is missing', extra={'seed_path': str(DEFAULT_COST_SEED_PATH), 'url': self._site_url})
+            return {'items': []}
 
         if self._http is not None and self._request_opt is not None and self._site_url is not None:
             try:
@@ -65,10 +72,11 @@ class PVCostSpider(BaseSpider[dict, CostRawItem]):
             except Exception as exc:
                 log.warning('fetch pv costs failed, fallback to local seed', extra={'error': str(exc)})
 
-        default_items = _load_seed_file(DEFAULT_COST_SEED_PATH, log=log)
+        default_items = _load_seed_file(DEFAULT_COST_SEED_PATH, log=log, warn_missing=True)
         if default_items:
             return {'items': default_items}
 
+        log.warning('pv costs seed fallback is missing', extra={'seed_path': str(DEFAULT_COST_SEED_PATH)})
         return {'items': list(EMBEDDED_COST_ITEMS)}
 
     def parse(self, raw: dict, ctx: RunContext) -> List[CostRawItem]:
@@ -112,8 +120,10 @@ def _resolve_seed_file(ctx: RunContext) -> Optional[Path]:
     return path.resolve()
 
 
-def _load_seed_file(path: Path, *, log) -> list[dict[str, Any]]:
+def _load_seed_file(path: Path, *, log, warn_missing: bool = False) -> list[dict[str, Any]]:
     if not path.exists():
+        if warn_missing:
+            log.warning('cost seed file missing', extra={'path': str(path)})
         return []
     try:
         payload = json.loads(path.read_text(encoding='utf-8-sig'))
@@ -124,6 +134,13 @@ def _load_seed_file(path: Path, *, log) -> list[dict[str, Any]]:
     except Exception as exc:
         log.warning('load cost seed file failed', extra={'path': str(path), 'error': str(exc)})
         return []
+
+
+def _should_use_seed_fallback(url: Optional[str]) -> bool:
+    if not url:
+        return True
+    normalized = url.rstrip('/').lower()
+    return is_placeholder_url(url) or normalized == 'https://www.nea.gov.cn'
 
 
 def _coerce_payload_items(payload: Any) -> list[dict[str, Any]]:

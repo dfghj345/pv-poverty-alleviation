@@ -13,6 +13,7 @@ if __package__ is None:
     _spec.loader.exec_module(_mod)
     _mod.ensure_project_root_on_syspath(__file__)
 
+import json
 from time import perf_counter
 from typing import Any, Optional
 import traceback
@@ -20,7 +21,7 @@ import traceback
 from data_pipeline.base.processor import BaseProcessor
 from data_pipeline.base.storage import BaseStorage, StoreResult
 from data_pipeline.base.spider import BaseSpider
-from data_pipeline.core.config import get_site
+from data_pipeline.core.config import get_site, pipeline_settings
 from data_pipeline.core.context import RunContext
 from data_pipeline.core.logging import get_ctx_logger
 from data_pipeline.core.request import HttpClient, PlaywrightHtmlClient, RequestOptions
@@ -87,6 +88,7 @@ class PipelineRunner:
         t0 = perf_counter()
         stage_durations: dict[str, int] = {}
         errors = StageErrors()
+        meta: dict[str, Any] = {}
 
         def _err(stage_name: str, exc: BaseException, *, url: Optional[str], item_index: Optional[int] = None, with_tb: bool = True) -> ErrorDetail:
             return ErrorDetail(
@@ -114,7 +116,7 @@ class PipelineRunner:
                 details=PipelineDetails(
                     stage_durations_ms=stage_durations,
                     errors=errors,
-                    meta={},
+                    meta=dict(meta),
                 ),
             )
 
@@ -129,8 +131,16 @@ class PipelineRunner:
                 raw = await spider.fetch(fctx)
             except Exception as e:
                 tb = traceback.format_exc()
-                errors.fetch_errors.append(_err("fetch", e, url=site_cfg.url))
+                errors.fetch_errors.append(_err("crawl", e, url=site_cfg.url))
                 stage_durations["fetch"] = int((perf_counter() - f0) * 1000)
+                meta["request_log"] = _request_log(
+                    spider=spider.name,
+                    url=site_cfg.url,
+                    fetch_meta=fctx.meta,
+                    html_length=int(fctx.meta.get("http_content_length") or 0),
+                    parsed_item_count=0,
+                    duration_ms=stage_durations["fetch"],
+                )
                 dur = int((perf_counter() - t0) * 1000)
                 # 打出完整失败上下文，便于定位“为什么 fetch 失败”（包含最后一次失败原因与 traceback）
                 log.error(
@@ -149,9 +159,17 @@ class PipelineRunner:
                 return _report("fail", stage, 0, dur)
             stage_durations["fetch"] = int((perf_counter() - f0) * 1000)
             if stage == "fetch":
+                meta["request_log"] = _request_log(
+                    spider=spider.name,
+                    url=site_cfg.url,
+                    fetch_meta=fctx.meta,
+                    html_length=_raw_length(raw),
+                    parsed_item_count=0,
+                    duration_ms=int((perf_counter() - f0) * 1000),
+                )
                 return _report("ok", "fetch", 1, int((perf_counter() - t0) * 1000))
 
-            pctx = base_ctx.with_stage("parse", url=site_cfg.url)
+            pctx = base_ctx.with_stage("parse", url=site_cfg.url, **fctx.meta)
             p0 = perf_counter()
             try:
                 items = spider.parse(raw, pctx)
@@ -159,25 +177,43 @@ class PipelineRunner:
             except Exception as e:
                 errors.parse_errors.append(_err("parse", e, url=site_cfg.url))
                 stage_durations["parse"] = int((perf_counter() - p0) * 1000)
+                meta["request_log"] = _request_log(
+                    spider=spider.name,
+                    url=site_cfg.url,
+                    fetch_meta=fctx.meta,
+                    html_length=_raw_length(raw),
+                    parsed_item_count=0,
+                    duration_ms=stage_durations["fetch"] + stage_durations["parse"],
+                )
                 dur = int((perf_counter() - t0) * 1000)
                 log.error(f"parse failed: {type(e).__name__}: {e}", exc_info=True)
                 return _report("fail", stage, 0, dur)
             stage_durations["parse"] = int((perf_counter() - p0) * 1000)
+            meta["request_log"] = _request_log(
+                spider=spider.name,
+                url=site_cfg.url,
+                fetch_meta=fctx.meta,
+                html_length=_raw_length(raw),
+                parsed_item_count=len(items),
+                duration_ms=stage_durations["fetch"] + stage_durations["parse"],
+            )
+            log.info("spider request completed", extra=meta["request_log"])
             if stage == "parse":
                 return _report("ok", "parse", len(items), int((perf_counter() - t0) * 1000))
 
             if processor is not None:
-                prctx = base_ctx.with_stage("process", url=site_cfg.url)
+                prctx = base_ctx.with_stage("process", url=site_cfg.url, **fctx.meta)
                 pr0 = perf_counter()
                 try:
                     items = processor.process(items, prctx)  # type: ignore[assignment,arg-type]
                 except Exception as e:
-                    errors.process_errors.append(_err("process", e, url=site_cfg.url))
+                    errors.process_errors.append(_err("parse", e, url=site_cfg.url))
                     stage_durations["process"] = int((perf_counter() - pr0) * 1000)
                     dur = int((perf_counter() - t0) * 1000)
                     log.error(f"process failed: {type(e).__name__}: {e}", exc_info=True)
                     return _report("fail", stage, 0, dur)
                 stage_durations["process"] = int((perf_counter() - pr0) * 1000)
+                meta["request_log"]["parsed_item_count"] = len(items)
             if stage == "process":
                 return _report("ok", "process", len(items), int((perf_counter() - t0) * 1000))
 
@@ -191,6 +227,12 @@ class PipelineRunner:
                 storage = get_storage(spider=spider.name, site=spider.site, data_type=str(data_type))
 
             if storage is not None:
+                if getattr(pipeline_settings, "PIPELINE_DATABASE_URL", None) is None:
+                    reason = "PIPELINE_DATABASE_URL is not configured; skipped store"
+                    log.warning(reason)
+                    dur = int((perf_counter() - t0) * 1000)
+                    stage_durations["store"] = 0
+                    return _report("skipped", "store", 0, dur, skipped_reason=reason)
                 sctx = base_ctx.with_stage("store", url=site_cfg.url)
                 s0 = perf_counter()
                 try:
@@ -229,4 +271,37 @@ class PipelineRunner:
             errors.fetch_errors.append(_err("crawl", e, url=site_cfg.url))
             log.error(f"pipeline failed: {type(e).__name__}: {e}", exc_info=True)
             return _report("fail", stage, 0, int((perf_counter() - t0) * 1000))
+
+
+def _raw_length(raw: Any) -> int:
+    if raw is None:
+        return 0
+    if isinstance(raw, bytes):
+        return len(raw)
+    if isinstance(raw, str):
+        return len(raw)
+    try:
+        return len(json.dumps(raw, ensure_ascii=False, default=str))
+    except Exception:
+        return 0
+
+
+def _request_log(
+    *,
+    spider: str,
+    url: str,
+    fetch_meta: dict[str, Any],
+    html_length: int,
+    parsed_item_count: int,
+    duration_ms: int,
+) -> dict[str, Any]:
+    return {
+        "spider": spider,
+        "url": url,
+        "status_code": fetch_meta.get("http_status_code"),
+        "final_url": fetch_meta.get("http_final_url") or fetch_meta.get("http_request_url") or url,
+        "html_length": html_length,
+        "parsed_item_count": parsed_item_count,
+        "duration_ms": duration_ms,
+    }
 
