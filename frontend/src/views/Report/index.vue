@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center w-full h-screen bg-slate-950 text-slate-400">
+  <div class="flex min-h-screen w-full flex-col items-center justify-center bg-slate-950 px-6 text-center text-slate-400">
     <div class="text-6xl mb-4">📄</div>
     <h1 class="text-2xl font-bold text-slate-200 mb-2">投资收益评估报告</h1>
     <p class="mb-6">详细报表页面正在开发中...</p>

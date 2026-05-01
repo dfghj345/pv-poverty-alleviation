@@ -12,14 +12,17 @@ import {
 import * as echarts from 'echarts';
 
 import type { PanelDataFilters, PanelDataListParams, PanelDataPage, PanelDataStats } from '@/api/panel_data';
+import { useMobilePager } from '@/composables/useMobilePager';
 import { useProjectStore } from '@/store/project';
 
 const WeatherRadiationPanel = defineAsyncComponent(() => import('@/components/WeatherRadiationPanel.vue'));
 const PovertyPanel = defineAsyncComponent(() => import('@/components/PovertyPanel.vue'));
 const PolicyPanel = defineAsyncComponent(() => import('@/components/PolicyPanel.vue'));
 const CostPanel = defineAsyncComponent(() => import('@/components/CostPanel.vue'));
+const GenerationPanel = defineAsyncComponent(() => import('@/components/GenerationPanel.vue'));
 
 type QueryState = Required<Pick<PanelDataListParams, 'page' | 'page_size'>> & Omit<PanelDataListParams, 'page' | 'page_size'>;
+type MobileToolKey = 'weather' | 'poverty' | 'policy' | 'cost' | 'generation';
 
 const props = withDefaults(defineProps<{
   stats?: PanelDataStats | null;
@@ -85,11 +88,37 @@ const emit = defineEmits<{
 }>();
 
 const projectStore = useProjectStore();
+const containerRef = ref<HTMLElement | null>(null);
 const keywordInput = ref(props.query.keyword ?? '');
 const provinceChartRef = ref<HTMLElement | null>(null);
 const trendChartRef = ref<HTMLElement | null>(null);
 const charts: echarts.ECharts[] = [];
 const isDarkTheme = ref(document.documentElement.classList.contains('dark'));
+const isCompactLayout = ref(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+const showMobileFilters = ref(false);
+const showMobileAdvancedFilters = ref(false);
+const showMobileTable = ref(false);
+const isMobileToolPanelOpen = ref(false);
+const activeMobileTool = ref<MobileToolKey>('weather');
+const mobileToolItems: Array<{ key: MobileToolKey; label: string; caption: string }> = [
+  { key: 'weather', label: '天气与辐射', caption: '查天气与利用小时' },
+  { key: 'poverty', label: '贫困地区数据', caption: '看人口与收入标签' },
+  { key: 'policy', label: '政策信息', caption: '查电价与补贴口径' },
+  { key: 'cost', label: '成本分析', caption: '查单位造价区间' },
+  { key: 'generation', label: '发电量分析', caption: '看项目发电表现' },
+];
+const mobileTableSource = computed(() => props.tableData.items);
+const {
+  page: mobileTablePage,
+  totalPages: mobileTableTotalPages,
+  pagedItems: mobileTableItems,
+  canPrev: canPrevMobileTablePage,
+  canNext: canNextMobileTablePage,
+  next: nextMobileTablePage,
+  prev: prevMobileTablePage,
+  onTouchStart: onMobileTableTouchStart,
+  onTouchEnd: onMobileTableTouchEnd,
+} = useMobilePager(mobileTableSource, 1);
 
 const summaryCards = computed(() => [
   {
@@ -124,8 +153,22 @@ const canPrevPage = computed(() => props.query.page > 1);
 const canNextPage = computed(() => props.query.page < totalPages.value);
 const pageStart = computed(() => (props.tableData.total === 0 ? 0 : (props.query.page - 1) * props.query.page_size + 1));
 const pageEnd = computed(() => Math.min(props.tableData.total, props.query.page * props.query.page_size));
+const activeMobileToolMeta = computed(() => mobileToolItems.find((item) => item.key === activeMobileTool.value) ?? mobileToolItems[0]);
+const provinceInsight = computed(() => {
+  const topProvince = props.stats?.by_province?.[0];
+  return topProvince
+    ? `${topProvince.province} 当前记录量最高，共 ${formatInteger(topProvince.count)} 条。`
+    : '优先关注记录量更集中的省份。';
+});
+const trendInsight = computed(() => {
+  const latestYear = props.stats?.by_year?.[props.stats.by_year.length - 1];
+  return latestYear
+    ? `${latestYear.year} 年装机量约 ${formatNumber(latestYear.value)} 万千瓦。`
+    : '通过年度趋势识别装机变化。';
+});
 
 let observer: MutationObserver | null = null;
+let resizeObserver: ResizeObserver | null = null;
 
 function formatNumber(value: number | null | undefined, digits = 2): string {
   if (value == null) {
@@ -183,6 +226,32 @@ function clearFilters(): void {
   });
 }
 
+function selectMobileTool(key: MobileToolKey): void {
+  activeMobileTool.value = key;
+  isMobileToolPanelOpen.value = true;
+}
+
+function closeMobileToolPanel(): void {
+  isMobileToolPanelOpen.value = false;
+}
+
+function handleMobileToolTarget(event: Event): void {
+  const target = (event as CustomEvent<string>).detail;
+  const targetMap: Record<string, MobileToolKey> = {
+    'weather-section': 'weather',
+    'poverty-section': 'poverty',
+    'policy-section': 'policy',
+    'cost-section': 'cost',
+    'generation-section': 'generation',
+  };
+  const nextTool = targetMap[target];
+  if (!nextTool) {
+    return;
+  }
+  activeMobileTool.value = nextTool;
+  isMobileToolPanelOpen.value = true;
+}
+
 function goToPage(page: number): void {
   if (page < 1 || page > totalPages.value || page === props.query.page) {
     return;
@@ -212,6 +281,7 @@ function disposeCharts(): void {
 }
 
 function handleResize(): void {
+  isCompactLayout.value = window.innerWidth < 768;
   charts.forEach((chart) => chart.resize());
 }
 
@@ -222,6 +292,7 @@ function initCharts(): void {
     return;
   }
 
+  const isCompact = isCompactLayout.value;
   const textColor = isDarkTheme.value ? '#F8FAFC' : '#0F172A';
   const splitLineColor = isDarkTheme.value ? '#334155' : '#E2E8F0';
 
@@ -229,18 +300,30 @@ function initCharts(): void {
     const provinceChart = markRaw(echarts.init(provinceChartRef.value));
     provinceChart.setOption({
       backgroundColor: 'transparent',
-      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
-      grid: { left: '5%', right: '4%', top: '12%', bottom: '18%', containLabel: true },
+      tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, confine: true },
+      grid: {
+        left: isCompact ? '9%' : '5%',
+        right: isCompact ? '6%' : '4%',
+        top: isCompact ? '12%' : '12%',
+        bottom: isCompact ? '26%' : '18%',
+        containLabel: true,
+      },
       xAxis: {
         type: 'category',
         data: props.stats.by_province.slice(0, 12).map((item) => item.province),
-        axisLabel: { color: textColor, rotate: 25, interval: 0 },
+        axisLabel: {
+          color: textColor,
+          rotate: isCompact ? 40 : 25,
+          interval: 0,
+          fontSize: isCompact ? 10 : 12,
+        },
         axisLine: { lineStyle: { color: splitLineColor } },
       },
       yAxis: {
         type: 'value',
         name: '记录数',
-        axisLabel: { color: textColor },
+        axisLabel: { color: textColor, fontSize: isCompact ? 10 : 12 },
+        nameTextStyle: { color: textColor, fontSize: isCompact ? 11 : 12 },
         splitLine: { lineStyle: { color: splitLineColor } },
       },
       series: [
@@ -264,29 +347,38 @@ function initCharts(): void {
     const trendChart = markRaw(echarts.init(trendChartRef.value));
     trendChart.setOption({
       backgroundColor: 'transparent',
-      tooltip: { trigger: 'axis' },
-      grid: { left: '5%', right: '4%', top: '12%', bottom: '14%', containLabel: true },
+      tooltip: { trigger: 'axis', confine: true },
+      grid: {
+        left: isCompact ? '9%' : '5%',
+        right: isCompact ? '9%' : '4%',
+        top: isCompact ? '14%' : '12%',
+        bottom: isCompact ? '24%' : '14%',
+        containLabel: true,
+      },
       legend: {
-        top: '2%',
-        textStyle: { color: textColor },
+        top: isCompact ? 'auto' : '2%',
+        bottom: isCompact ? 0 : 'auto',
+        textStyle: { color: textColor, fontSize: isCompact ? 11 : 12 },
       },
       xAxis: {
         type: 'category',
         data: props.stats.by_year.map((item) => item.year),
-        axisLabel: { color: textColor },
+        axisLabel: { color: textColor, fontSize: isCompact ? 10 : 12 },
         axisLine: { lineStyle: { color: splitLineColor } },
       },
       yAxis: [
         {
           type: 'value',
           name: '记录数',
-          axisLabel: { color: textColor },
+          axisLabel: { color: textColor, fontSize: isCompact ? 10 : 12 },
+          nameTextStyle: { color: textColor, fontSize: isCompact ? 11 : 12 },
           splitLine: { lineStyle: { color: splitLineColor } },
         },
         {
           type: 'value',
-          name: '装机量(万千瓦)',
-          axisLabel: { color: textColor },
+          name: '装机量（万千瓦）',
+          axisLabel: { color: textColor, fontSize: isCompact ? 10 : 12 },
+          nameTextStyle: { color: textColor, fontSize: isCompact ? 11 : 12 },
           splitLine: { show: false },
         },
       ],
@@ -295,7 +387,7 @@ function initCharts(): void {
           name: '记录数',
           type: 'bar',
           data: props.stats.by_year.map((item) => item.count),
-          barMaxWidth: 24,
+          barMaxWidth: isCompact ? 18 : 24,
           itemStyle: { color: '#38bdf8', borderRadius: [6, 6, 0, 0] },
         },
         {
@@ -329,6 +421,13 @@ watch(
 
 onMounted(async () => {
   window.addEventListener('resize', handleResize);
+  window.addEventListener('mobile-tool-target', handleMobileToolTarget as EventListener);
+  resizeObserver = new ResizeObserver(() => {
+    handleResize();
+  });
+  if (containerRef.value) {
+    resizeObserver.observe(containerRef.value);
+  }
   observer = new MutationObserver(async () => {
     isDarkTheme.value = document.documentElement.classList.contains('dark');
     await nextTick();
@@ -341,25 +440,27 @@ onMounted(async () => {
 
 onUnmounted(() => {
   window.removeEventListener('resize', handleResize);
+  window.removeEventListener('mobile-tool-target', handleMobileToolTarget as EventListener);
+  resizeObserver?.disconnect();
   observer?.disconnect();
   disposeCharts();
 });
 </script>
 
 <template>
-  <div class="w-full space-y-8">
+  <div ref="containerRef" class="w-full space-y-6 sm:space-y-8 lg:space-y-12">
     <section
       v-if="showSummary"
-      class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4"
+      class="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5"
     >
       <article
         v-for="card in summaryCards"
         :key="card.title"
-        class="rounded-3xl border border-slate-200 p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md dark:border-slate-800"
+        class="apple-card p-3.5 transition hover:-translate-y-0.5 sm:p-4 lg:rounded-[30px] lg:p-7"
         :class="card.tone"
       >
-        <p class="text-sm text-slate-500 dark:text-dark-text/60">{{ card.title }}</p>
-        <p class="mt-3 text-3xl font-semibold" :class="card.accent">{{ card.value }}</p>
+        <p class="text-xs text-slate-500 dark:text-dark-text/60 sm:text-sm">{{ card.title }}</p>
+        <p class="mt-2 text-lg font-semibold tracking-[-0.03em] sm:text-2xl lg:mt-4 lg:text-4xl" :class="card.accent">{{ card.value }}</p>
       </article>
     </section>
 
@@ -372,24 +473,33 @@ onUnmounted(() => {
 
     <section
       v-if="showFilters"
-      class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-dark-card"
+      class="apple-card p-4 sm:p-6 lg:p-8"
     >
       <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p class="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-300">Panel Data</p>
-          <h3 class="mt-2 text-2xl font-semibold text-slate-900 dark:text-dark-text">筛选与检索</h3>
-          <p class="mt-2 text-sm text-slate-500 dark:text-dark-text/60">
-            统一查看省市年度面板数据，联动地图、图表和明细表格。
-          </p>
+          <h3 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-dark-text lg:text-[2rem]">筛选与检索</h3>
+          <p class="mt-3 text-sm text-slate-500 dark:text-dark-text/60 lg:max-w-2xl lg:text-base lg:leading-7">
+            统一查看省市年份面板数据，联动地图、图表和明细表格。          </p>
         </div>
         <div class="flex items-center gap-3">
           <button
-            class="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:text-emerald-600 dark:border-slate-700 dark:text-dark-text/80 dark:hover:border-emerald-400 dark:hover:text-emerald-300"
+            class="apple-pill-secondary w-full sm:w-auto"
             @click="$emit('reload')"
           >
             刷新数据
           </button>
         </div>
+      </div>
+
+      <div class="mt-4 md:hidden">
+        <button
+          type="button"
+          class="apple-pill-secondary w-full justify-center"
+          @click="showMobileFilters = !showMobileFilters"
+        >
+          {{ showMobileFilters ? '收起筛选条件' : '筛选条件' }}
+        </button>
       </div>
 
       <div
@@ -399,11 +509,11 @@ onUnmounted(() => {
         {{ errors.filters }}
       </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div v-if="showMobileFilters" class="mt-4 grid grid-cols-1 gap-3 md:hidden">
         <label class="space-y-2">
           <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">省份</span>
           <select
-            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:bg-white dark:border-slate-700 dark:bg-slate-900/40 dark:text-dark-text"
+            class="apple-input w-full"
             :disabled="loading.filters"
             :value="query.province ?? ''"
             @change="handleProvinceChange"
@@ -418,7 +528,91 @@ onUnmounted(() => {
         <label class="space-y-2">
           <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">城市</span>
           <select
-            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:bg-white disabled:cursor-not-allowed disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900/40 dark:text-dark-text"
+            class="apple-input w-full disabled:cursor-not-allowed disabled:opacity-60"
+            :disabled="loading.filters || filters.cities.length === 0"
+            :value="query.city ?? ''"
+            @change="handleCityChange"
+          >
+            <option value="">全部城市</option>
+            <option v-for="city in filters.cities" :key="city" :value="city">
+              {{ city }}
+            </option>
+          </select>
+        </label>
+
+        <div class="grid grid-cols-2 gap-3">
+          <button
+            type="button"
+            class="apple-pill-secondary w-full"
+            @click="showMobileAdvancedFilters = !showMobileAdvancedFilters"
+          >
+            {{ showMobileAdvancedFilters ? '收起高级条件' : '高级条件' }}
+          </button>
+          <button
+            type="button"
+            class="apple-pill-secondary w-full"
+            @click="clearFilters"
+          >
+            重置
+          </button>
+
+        </div>
+        <div v-if="showMobileAdvancedFilters" class="grid grid-cols-1 gap-3">
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">年份</span>
+            <select
+              class="apple-input w-full"
+              :value="query.year ?? ''"
+              @change="handleYearChange"
+            >
+              <option value="">全部年份</option>
+              <option v-for="year in filters.years" :key="year" :value="year">
+                {{ year }}
+              </option>
+            </select>
+          </label>
+
+          <label class="space-y-2">
+            <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">关键词</span>
+            <input
+              v-model="keywordInput"
+              type="text"
+              placeholder="搜索省份、城市或年份"
+              class="apple-input w-full"
+              @keyup.enter="handleKeywordSearch"
+            />
+          </label>
+
+          <button
+            type="button"
+            class="apple-pill-primary w-full"
+            @click="handleKeywordSearch"
+          >
+            查询
+          </button>
+      </div>
+      </div>
+
+      <div class="mt-4 hidden gap-3 md:mt-6 md:grid md:grid-cols-2 md:gap-4 xl:grid-cols-5">
+        <label class="space-y-2">
+          <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">省份</span>
+          <select
+            class="apple-input w-full"
+            :disabled="loading.filters"
+            :value="query.province ?? ''"
+            @change="handleProvinceChange"
+          >
+            <option value="">全部省份</option>
+            <option v-for="province in filters.provinces" :key="province" :value="province">
+              {{ province }}
+            </option>
+          </select>
+        </label>
+
+        <label class="space-y-2">
+          <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">城市</span>
+          <select
+            class="apple-input w-full disabled:cursor-not-allowed disabled:opacity-60"
             :disabled="loading.filters || filters.cities.length === 0"
             :value="query.city ?? ''"
             @change="handleCityChange"
@@ -433,7 +627,7 @@ onUnmounted(() => {
         <label class="space-y-2">
           <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">年份</span>
           <select
-            class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:bg-white dark:border-slate-700 dark:bg-slate-900/40 dark:text-dark-text"
+            class="apple-input w-full"
             :value="query.year ?? ''"
             @change="handleYearChange"
           >
@@ -446,22 +640,22 @@ onUnmounted(() => {
 
         <label class="space-y-2 xl:col-span-2">
           <span class="text-sm font-medium text-slate-700 dark:text-dark-text/80">关键词</span>
-          <div class="flex gap-3">
+          <div class="flex flex-col gap-3 sm:flex-row">
             <input
               v-model="keywordInput"
               type="text"
               placeholder="搜索省份、城市或年份"
-              class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none transition focus:border-emerald-400 focus:bg-white dark:border-slate-700 dark:bg-slate-900/40 dark:text-dark-text"
+              class="apple-input w-full"
               @keyup.enter="handleKeywordSearch"
             />
             <button
-              class="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-600"
+              class="apple-pill-primary w-full sm:w-auto"
               @click="handleKeywordSearch"
             >
               查询
             </button>
             <button
-              class="rounded-2xl border border-slate-200 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 dark:border-slate-700 dark:text-dark-text/80"
+              class="apple-pill-secondary w-full sm:w-auto"
               @click="clearFilters"
             >
               重置
@@ -473,56 +667,61 @@ onUnmounted(() => {
 
     <section
       v-if="showCharts"
-      class="grid grid-cols-1 gap-6 xl:grid-cols-2"
+      class="grid grid-cols-1 gap-4 xl:grid-cols-2 xl:gap-6"
     >
-      <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-dark-card">
+      <article class="apple-card overflow-hidden p-4 sm:p-6 lg:p-8">
         <div class="mb-4 flex items-center justify-between">
           <div>
             <h4 class="text-lg font-semibold text-slate-900 dark:text-dark-text">各省数据量分布</h4>
             <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">展示记录数最高的前 12 个省级区域</p>
           </div>
         </div>
-        <div v-if="loading.stats" class="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-dark-text/60">
+        <div v-if="loading.stats" class="flex h-72 items-center justify-center text-sm text-slate-500 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           正在加载省份图表...
         </div>
-        <div v-else-if="!hasStatsData" class="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+        <div v-else-if="!hasStatsData" class="flex h-72 items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           暂无省份统计数据
         </div>
-        <div v-else ref="provinceChartRef" class="h-80 w-full"></div>
+        <div v-else ref="provinceChartRef" class="h-72 w-full sm:h-80 lg:h-[380px]"></div>
+        <p v-if="hasStatsData" class="mt-4 text-xs font-medium text-slate-400 dark:text-dark-text/50">
+          {{ provinceInsight }}
+        </p>
       </article>
 
-      <article class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-dark-card">
+      <article class="apple-card overflow-hidden p-4 sm:p-6 lg:p-8">
         <div class="mb-4 flex items-center justify-between">
           <div>
             <h4 class="text-lg font-semibold text-slate-900 dark:text-dark-text">年份趋势</h4>
-            <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">按年份查看记录数量与光伏装机量变化</p>
+            <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">按年份查看记录数量与装机量变化</p>
           </div>
         </div>
-        <div v-if="loading.stats" class="flex h-80 items-center justify-center text-sm text-slate-500 dark:text-dark-text/60">
+        <div v-if="loading.stats" class="flex h-72 items-center justify-center text-sm text-slate-500 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           正在加载年份趋势...
         </div>
-        <div v-else-if="!hasStatsData" class="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+        <div v-else-if="!hasStatsData" class="flex h-72 items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           暂无年份统计数据
         </div>
-        <div v-else ref="trendChartRef" class="h-80 w-full"></div>
+        <div v-else ref="trendChartRef" class="h-72 w-full sm:h-80 lg:h-[380px]"></div>
+        <p v-if="hasStatsData" class="mt-4 text-xs font-medium text-slate-400 dark:text-dark-text/50">
+          {{ trendInsight }}
+        </p>
       </article>
     </section>
 
     <section
       v-if="showTable"
-      class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-dark-card"
+      class="apple-card p-4 sm:p-6 lg:p-8"
     >
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h4 class="text-lg font-semibold text-slate-900 dark:text-dark-text">面板数据明细</h4>
           <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">
-            {{ pageStart }} - {{ pageEnd }} / {{ formatInteger(tableData.total) }} 条
-          </p>
+            {{ pageStart }} - {{ pageEnd }} / {{ formatInteger(tableData.total) }} 条</p>
         </div>
         <div class="flex items-center gap-3">
           <label class="text-sm text-slate-500 dark:text-dark-text/60">每页</label>
           <select
-            class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm dark:border-slate-700 dark:bg-slate-900/40 dark:text-dark-text"
+            class="apple-input rounded-[16px] px-3 py-2"
             :value="query.page_size"
             @change="changePageSize"
           >
@@ -540,7 +739,84 @@ onUnmounted(() => {
         {{ errors.list }}
       </div>
 
-      <div class="mt-5 overflow-x-auto">
+      <div class="mt-4 md:hidden">
+        <button
+          type="button"
+          class="apple-pill-secondary w-full justify-center"
+          @click="showMobileTable = !showMobileTable"
+        >
+          {{ showMobileTable ? '收起明细数据' : '查看明细数据' }}
+        </button>
+      </div>
+
+      <div
+        v-if="showMobileTable"
+        class="mt-5 space-y-3 md:hidden"
+        @touchstart.passive="onMobileTableTouchStart"
+        @touchend.passive="onMobileTableTouchEnd"
+      >
+        <div v-if="loading.list" class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+          正在加载明细数据...
+        </div>
+        <div v-else-if="tableData.items.length === 0" class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+          当前筛选条件下暂无数据
+        </div>
+        <template v-else>
+          <article
+            v-for="item in mobileTableItems"
+            :key="`mobile-${item.id}`"
+            class="apple-subcard p-4"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ item.province }} {{ item.city }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">{{ item.year }} 年</p>
+              </div>
+              <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                {{ formatNumber(item.pv_installed_capacity_wan_kw) }} 万千瓦</span>
+            </div>
+
+            <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+                <p class="text-xs text-slate-400">人均收入</p>
+                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ formatNumber(item.disposable_income_per_capita_yuan, 0) }} 元</p>
+              </div>
+              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+                <p class="text-xs text-slate-400">GDP</p>
+                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ formatNumber(item.gdp_100m_yuan) }} 亿元</p>
+              </div>
+              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+                <p class="text-xs text-slate-400">PM2.5</p>
+                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ formatNumber(item.pm25_annual_avg_ug_per_m3) }}</p>
+              </div>
+              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+                <p class="text-xs text-slate-400">年份</p>
+                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.year }}</p>
+              </div>
+            </div>
+          </article>
+
+          <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-dark-card">
+            <button
+              type="button"
+              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              :disabled="!canPrevMobileTablePage"
+              @click="prevMobileTablePage"
+            >
+              上一页</button>
+            <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobileTablePage + 1 }} / {{ mobileTableTotalPages }}</span>
+            <button
+              type="button"
+              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              :disabled="!canNextMobileTablePage"
+              @click="nextMobileTablePage"
+            >
+              下一页</button>
+          </div>
+        </template>
+      </div>
+
+      <div class="touch-scroll mt-5 hidden overflow-x-auto rounded-[24px] border border-black/[0.05] bg-[#fbfbfd] md:block dark:border-slate-800 dark:bg-slate-900/30">
         <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
           <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-dark-text/60">
             <tr>
@@ -574,11 +850,9 @@ onUnmounted(() => {
               <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ item.city }}</td>
               <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ item.year }}</td>
               <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">
-                {{ formatNumber(item.pv_installed_capacity_wan_kw) }} 万千瓦
-              </td>
+                {{ formatNumber(item.pv_installed_capacity_wan_kw) }} 万千瓦</td>
               <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">
-                {{ formatNumber(item.disposable_income_per_capita_yuan, 0) }} 元
-              </td>
+                {{ formatNumber(item.disposable_income_per_capita_yuan, 0) }} 元</td>
               <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">
                 {{ formatNumber(item.gdp_100m_yuan) }} 亿元
               </td>
@@ -592,43 +866,101 @@ onUnmounted(() => {
 
       <div class="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <p class="text-sm text-slate-500 dark:text-dark-text/60">
-          第 {{ query.page }} / {{ totalPages }} 页
-        </p>
-        <div class="flex items-center gap-3">
+          第 {{ query.page }} / {{ totalPages }} 页</p>
+        <div class="grid grid-cols-2 gap-3 sm:flex sm:items-center">
           <button
-            class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-dark-text/80"
+            class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-dark-text/80 sm:w-auto"
             :disabled="!canPrevPage"
             @click="goToPage(query.page - 1)"
           >
-            上一页
-          </button>
+            上一页</button>
           <button
-            class="rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-dark-text/80"
+            class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-dark-text/80 sm:w-auto"
             :disabled="!canNextPage"
             @click="goToPage(query.page + 1)"
           >
-            下一页
-          </button>
+            下一页</button>
         </div>
       </div>
     </section>
 
     <section
       v-if="showToolkit"
-      class="space-y-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-dark-card"
+      class="space-y-8 lg:space-y-10"
     >
       <div>
         <p class="text-sm uppercase tracking-[0.28em] text-slate-400">Toolkit</p>
-        <h4 class="mt-2 text-xl font-semibold text-slate-900 dark:text-dark-text">业务辅助面板</h4>
+        <h4 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-dark-text lg:text-[2rem]">业务辅助面板</h4>
       </div>
 
-      <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
-        <WeatherRadiationPanel />
-        <PovertyPanel />
+      <div id="tools-mobile-section" class="space-y-4 md:hidden">
+        <div v-if="!isMobileToolPanelOpen" class="apple-subcard p-4">
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">数据工具</p>
+              <p class="apple-compact-copy mt-2">先选择一个工具，再查看表单、结果和应用动作。</p>
+            </div>
+            <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-slate-100 dark:text-slate-900">
+              {{ mobileToolItems.length }} 个</span>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <button
+              v-for="tool in mobileToolItems"
+              :key="tool.key"
+              type="button"
+              class="apple-subcard px-4 py-4 text-left transition hover:border-slate-300"
+              @click="selectMobileTool(tool.key)"
+            >
+              <span class="block text-sm font-medium text-slate-900 dark:text-dark-text">{{ tool.label }}</span>
+              <span class="mt-1 block text-xs text-slate-500 dark:text-dark-text/60">{{ tool.caption }}</span>
+            </button>
+          </div>
+        </div>
+
+        <div v-else class="space-y-4">
+          <div class="apple-subcard p-4">
+            <div class="flex items-start justify-between gap-3">
+              <div>
+                <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ activeMobileToolMeta.label }}</p>
+                <p class="apple-compact-copy mt-2">{{ activeMobileToolMeta.caption }}</p>
+              </div>
+              <button
+                type="button"
+                class="apple-pill-secondary min-h-[40px] px-4 py-2"
+                @click="closeMobileToolPanel"
+              >
+                返回工具
+              </button>
+            </div>
+          </div>
+
+          <WeatherRadiationPanel v-if="activeMobileTool === 'weather'" />
+          <PovertyPanel v-else-if="activeMobileTool === 'poverty'" />
+          <PolicyPanel v-else-if="activeMobileTool === 'policy'" @apply-price="onApplyPrice" />
+          <CostPanel v-else-if="activeMobileTool === 'cost'" @apply-cost="onApplyCost" />
+          <GenerationPanel v-else />
+        </div>
       </div>
 
-      <PolicyPanel @apply-price="onApplyPrice" />
-      <CostPanel @apply-cost="onApplyCost" />
+      <div class="hidden grid-cols-1 items-start gap-6 md:grid lg:gap-8 xl:grid-cols-2">
+        <div class="min-w-0">
+          <WeatherRadiationPanel />
+        </div>
+        <section id="poverty-section" class="min-w-0 scroll-mt-24 sm:scroll-mt-28">
+          <PovertyPanel />
+        </section>
+
+        <section id="policy-section" class="min-w-0 scroll-mt-24 sm:scroll-mt-28 xl:col-span-2">
+          <PolicyPanel @apply-price="onApplyPrice" />
+        </section>
+        <section id="cost-section" class="min-w-0 scroll-mt-24 sm:scroll-mt-28">
+          <CostPanel @apply-cost="onApplyCost" />
+        </section>
+        <section id="generation-section" class="min-w-0 scroll-mt-24 sm:scroll-mt-28">
+          <GenerationPanel />
+        </section>
+      </div>
     </section>
   </div>
 </template>

@@ -26,6 +26,7 @@ const projectStore = useProjectStore();
 const loading = ref(false);
 const errorMsg = ref<string | null>(null);
 const infoMsg = ref<string | null>(null);
+const mobilePanel = ref<'form' | 'result'>('form');
 
 const fallbackStation = computed(() => projectStore.selectedStation);
 const hasSelection = computed(() => Boolean(props.selectedData || fallbackStation.value));
@@ -152,7 +153,7 @@ function buildSelectionContext() {
   };
 }
 
-async function runAutoFill(options?: { silent?: boolean }): Promise<void> {
+async function runAutoFill(options?: { silent?: boolean }): Promise<boolean> {
   const silent = options?.silent ?? false;
   const selection = buildSelectionContext();
 
@@ -163,7 +164,7 @@ async function runAutoFill(options?: { silent?: boolean }): Promise<void> {
     if (!silent) {
       errorMsg.value = '请先在地图或聚合列表中选择一条数据';
     }
-    return;
+    return false;
   }
 
   loading.value = true;
@@ -220,11 +221,28 @@ async function runAutoFill(options?: { silent?: boolean }): Promise<void> {
     }
 
     infoMsg.value = `已同步默认测算参数：${selection.siteName}`;
+    return true;
   } catch (error) {
     errorMsg.value = error instanceof Error ? error.message : '自动填参失败';
+    return false;
   } finally {
     loading.value = false;
   }
+}
+
+async function handleSync(): Promise<void> {
+  const success = await runAutoFill();
+  if (success && window.innerWidth < 768) {
+    mobilePanel.value = 'result';
+  }
+}
+
+function showDetails(): void {
+  mobilePanel.value = 'result';
+}
+
+function backToSummary(): void {
+  mobilePanel.value = 'form';
 }
 
 watch(
@@ -250,97 +268,129 @@ watch(
 </script>
 
 <template>
-  <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-dark-card">
-    <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-      <div>
-        <p class="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-300">Auto Fill</p>
-        <h3 class="mt-2 text-2xl font-semibold text-slate-900 dark:text-dark-text">自动填参</h3>
-        <p class="mt-2 text-sm leading-7 text-slate-500 dark:text-dark-text/60">
-          选中地图点位或聚合列表后，自动把省市、装机量、电价、天气利用小时和成本参数同步到收益测算。
-        </p>
-      </div>
-      <button
-        class="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-medium text-white transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:opacity-60"
-        :disabled="loading || !hasSelection"
-        @click="runAutoFill()"
-      >
-        {{ loading ? '同步中...' : '重新同步参数' }}
-      </button>
-    </div>
-
+  <div class="min-w-0 apple-card overflow-hidden">
     <div
-      v-if="!hasSelection"
-      class="mt-6 rounded-2xl border border-dashed border-slate-200 px-6 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
+      class="flex w-[200%] transition-transform duration-300 ease-out md:block md:w-full md:transition-none"
+      :class="mobilePanel === 'result' ? '-translate-x-1/2 md:translate-x-0' : 'translate-x-0'"
     >
-      请先在地图或聚合列表中选择一条数据
-    </div>
-
-    <div v-else class="mt-6 space-y-6">
-      <div class="rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
-        <div class="flex items-center justify-between gap-3">
+      <div class="min-w-0 w-1/2 shrink-0 p-4 sm:p-6 md:w-full lg:p-8">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p class="text-sm text-slate-500 dark:text-dark-text/60">当前选中</p>
-            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ selectedTitle }}</p>
+            <p class="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-300">Auto Fill</p>
+            <h3 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-dark-text lg:text-[2rem]">自动填参</h3>
+            <p class="apple-compact-copy mt-3 lg:text-base">
+              把省市、装机量、电价与天气成本参数一键同步到测算。
+            </p>
           </div>
-          <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-            panel_data
-          </span>
+          <button
+            class="apple-pill-primary w-full sm:w-auto"
+            :disabled="loading || !hasSelection"
+            @click="handleSync"
+          >
+            {{ loading ? '同步中...' : '重新同步参数' }}
+          </button>
         </div>
 
-        <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          <div
-            v-for="item in detailRows"
-            :key="item.label"
-            class="rounded-2xl border border-white/70 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/40"
-          >
-            <p class="text-xs uppercase tracking-[0.16em] text-slate-400">{{ item.label }}</p>
-            <p class="mt-2 text-sm font-medium text-slate-900 dark:text-dark-text">{{ item.value }}</p>
+        <div
+          v-if="!hasSelection"
+          class="mt-6 rounded-2xl border border-dashed border-slate-200 px-6 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
+        >
+          请先在地图或聚合列表中选择一条数据
+        </div>
+
+        <div v-else class="mt-6 space-y-6">
+          <div class="apple-subcard p-5">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p class="text-sm text-slate-500 dark:text-dark-text/60">当前选中</p>
+                <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ selectedTitle }}</p>
+              </div>
+              <span class="inline-flex w-fit rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                panel_data
+              </span>
+            </div>
+
+            <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div
+                v-for="item in detailRows"
+                :key="item.label"
+                class="rounded-[20px] border border-white/70 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.02)] dark:border-slate-800 dark:bg-slate-950/40"
+              >
+                <p class="text-xs uppercase tracking-[0.16em] text-slate-400">{{ item.label }}</p>
+                <p class="mt-2 text-sm font-medium text-slate-900 dark:text-dark-text">{{ item.value }}</p>
+              </div>
+            </div>
           </div>
+
+          <button
+            type="button"
+            class="apple-pill-secondary w-full md:hidden"
+            @click="showDetails"
+          >
+            查看同步详情
+          </button>
+        </div>
+
+        <div v-if="errorMsg" class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+          {{ errorMsg }}
+        </div>
+        <div v-if="infoMsg" class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+          {{ infoMsg }}
         </div>
       </div>
 
-      <div class="rounded-2xl border border-slate-100 bg-slate-50 p-5 dark:border-slate-800 dark:bg-slate-900/40">
+      <div class="min-w-0 w-1/2 shrink-0 border-l border-slate-200 p-4 dark:border-slate-800 sm:p-6 md:w-full md:border-l-0 lg:p-8">
         <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-sm text-slate-500 dark:text-dark-text/60">关键字段</p>
-            <p class="mt-2 text-lg font-semibold text-slate-900 dark:text-dark-text">当前选中数据详情</p>
+            <p class="mt-2 text-lg font-semibold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[1.65rem]">当前选中数据详情</p>
           </div>
+          <button
+            type="button"
+            class="apple-pill-secondary min-h-[40px] px-4 py-2 md:hidden"
+            @click="backToSummary"
+          >
+            返回筛选
+          </button>
+        </div>
+
+        <div class="apple-subcard mt-5 p-5">
           <span
             v-if="detailLoading"
             class="rounded-full bg-slate-200 px-3 py-1 text-xs font-medium text-slate-600 dark:bg-slate-800 dark:text-dark-text/70"
           >
             加载中
           </span>
-        </div>
 
-        <div v-if="detailError" class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
-          {{ detailError }}
-        </div>
+          <div v-if="detailError" class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+            {{ detailError }}
+          </div>
 
-        <div
-          v-else-if="!detailLoading && recordRows.length === 0"
-          class="mt-4 rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
-        >
-          当前只有聚合信息，暂无更多明细字段
-        </div>
-
-        <div v-else class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <div
-            v-for="item in recordRows"
-            :key="item.label"
-            class="rounded-2xl border border-white/70 bg-white px-4 py-3 shadow-sm dark:border-slate-800 dark:bg-slate-950/40"
+            v-else-if="!detailLoading && recordRows.length === 0"
+            class="mt-4 rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
           >
-            <p class="text-xs uppercase tracking-[0.16em] text-slate-400">{{ item.label }}</p>
-            <p class="mt-2 text-sm font-medium text-slate-900 dark:text-dark-text">{{ item.value }}</p>
+            当前只有聚合信息，暂无更多明细字段
+          </div>
+
+          <div v-else class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+            <div
+              v-for="item in recordRows"
+              :key="item.label"
+              class="rounded-[20px] border border-white/70 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.02)] dark:border-slate-800 dark:bg-slate-950/40"
+            >
+              <p class="text-xs uppercase tracking-[0.16em] text-slate-400">{{ item.label }}</p>
+              <p class="mt-2 text-sm font-medium text-slate-900 dark:text-dark-text">{{ item.value }}</p>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div v-if="errorMsg" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
-        {{ errorMsg }}
-      </div>
-      <div v-if="infoMsg" class="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-        {{ infoMsg }}
+        <div v-if="errorMsg" class="mt-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+          {{ errorMsg }}
+        </div>
+        <div v-if="infoMsg" class="mt-4 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+          {{ infoMsg }}
+        </div>
       </div>
     </div>
   </div>

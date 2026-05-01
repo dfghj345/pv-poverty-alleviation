@@ -8,13 +8,13 @@ const priceDisplay = computed(() => formData.benchmark_price.toFixed(2));
 </script>
 
 <template>
-  <div class="w-full max-w-2xl mx-auto bg-slate-900/90 backdrop-blur-xl border border-slate-700 rounded-2xl p-6 shadow-2xl text-slate-200">
+  <div class="mx-auto w-full max-w-2xl rounded-2xl border border-slate-700 bg-slate-900/90 p-4 text-slate-200 shadow-2xl backdrop-blur-xl sm:p-6">
     <div class="flex items-center gap-2 mb-4">
       <div class="w-1.5 h-5 bg-emerald-500 rounded-full"></div>
       <h2 class="text-lg font-bold">收益仿真推演引擎</h2>
     </div>
 
-    <div class="grid grid-cols-2 gap-6 mb-6">
+    <div class="mb-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
       <div>
         <div class="flex justify-between text-sm mb-2">
           <label class="text-slate-400">规划装机容量</label>
@@ -48,7 +48,7 @@ const priceDisplay = computed(() => formData.benchmark_price.toFixed(2));
     <button
       type="button"
       :disabled="isCalculating"
-      class="w-full py-3 rounded-xl font-semibold transition-all flex justify-center items-center gap-2"
+      class="flex min-h-[48px] w-full items-center justify-center gap-2 rounded-xl py-3 font-semibold transition-all"
       :class="buttonClass"
       @click="handleCalculate"
     >

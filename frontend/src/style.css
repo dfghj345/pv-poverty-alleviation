@@ -6,8 +6,55 @@
   html {
     scroll-behavior: smooth;
   }
+  html,
+  body,
+  #app {
+    min-height: 100%;
+    width: 100%;
+  }
   body {
-    @apply bg-gray-50 text-gray-800 dark:bg-dark-bg dark:text-dark-text transition-colors duration-300 antialiased font-inter;
+    @apply bg-[#f5f5f7] text-gray-800 dark:bg-dark-bg dark:text-dark-text transition-colors duration-300 antialiased font-inter;
+    overflow-x: hidden;
+  }
+  img,
+  svg,
+  canvas {
+    display: block;
+    max-width: 100%;
+  }
+}
+
+@layer components {
+  .touch-scroll {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .apple-card {
+    @apply rounded-[26px] border border-black/[0.05] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)] lg:rounded-[32px] lg:shadow-[0_24px_60px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-dark-card dark:shadow-none;
+  }
+
+  .apple-subcard {
+    @apply rounded-[22px] border border-black/[0.04] bg-[#fbfbfd] shadow-[0_1px_2px_rgba(15,23,42,0.02)] dark:border-slate-800 dark:bg-slate-900/40 dark:shadow-none;
+  }
+
+  .apple-input {
+    @apply min-h-[46px] w-full min-w-0 rounded-[18px] border border-slate-200 bg-[#f7f7fa] px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-300 focus:bg-white focus:ring-0 dark:border-slate-700 dark:bg-dark-bg dark:text-dark-text;
+  }
+
+  .apple-pill-primary {
+    @apply inline-flex min-h-[46px] items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .apple-pill-secondary {
+    @apply inline-flex min-h-[46px] items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80 dark:hover:border-slate-600 dark:hover:bg-slate-900/60;
+  }
+
+  .apple-section-title {
+    @apply text-[1.75rem] font-semibold tracking-[-0.04em] text-slate-950 lg:text-[2.4rem] dark:text-dark-text;
+  }
+
+  .apple-section-copy {
+    @apply text-sm leading-6 text-slate-500 lg:text-base lg:leading-7 dark:text-dark-text/60;
   }
 }
 

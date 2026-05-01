@@ -93,7 +93,7 @@ export function useROICalculator() {
     { immediate: true, deep: true }
   );
 
-  async function submit(): Promise<void> {
+  async function submit(): Promise<boolean> {
     calculating.value = true;
     errorMsg.value = null;
 
@@ -107,9 +107,11 @@ export function useROICalculator() {
           ? response.annual_cash_flows.map((value) => toFiniteNumber(value, 0))
           : [],
       };
+      return true;
     } catch (error) {
       console.error('ROI calculation API request failed', error);
       errorMsg.value = error instanceof Error ? error.message : '收益测算接口请求失败';
+      return false;
     } finally {
       calculating.value = false;
     }

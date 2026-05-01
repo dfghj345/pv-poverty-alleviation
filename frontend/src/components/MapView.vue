@@ -4,6 +4,7 @@ import AMapLoader from '@amap/amap-jsapi-loader';
 import gcoord from 'gcoord';
 
 import { buildAggregateKey, type MapViewport, type PanelDataMapAggregate } from '@/composables/useProjectMap';
+import { useMobilePager } from '@/composables/useMobilePager';
 
 const props = withDefaults(defineProps<{
   items?: PanelDataMapAggregate[];
@@ -32,18 +33,31 @@ const mapContainer = ref<HTMLElement | null>(null);
 const map = shallowRef<any>(null);
 const internalMapError = ref<string | null>(null);
 const mapNotice = ref<string | null>(null);
+const showMobileDetails = ref(false);
 
 const hasMapPoints = computed(() => props.items.length > 0);
 const visibleItems = computed(() =>
   [...props.items].sort((left, right) => right.value - left.value || right.count - left.count || right.year - left.year),
 );
 const effectiveError = computed(() => props.errorMessage ?? internalMapError.value);
+const {
+  page: mobilePage,
+  totalPages: mobileTotalPages,
+  pagedItems: mobileItems,
+  canPrev: canPrevMobilePage,
+  canNext: canNextMobilePage,
+  next: nextMobilePage,
+  prev: prevMobilePage,
+  onTouchStart,
+  onTouchEnd,
+} = useMobilePager(visibleItems, 1);
 
 let AMapInstance: any = null;
 let currentMarkers: any[] = [];
 let activeMarker: any = null;
 let infoWindow: any = null;
 const markerIndex = new Map<string, any>();
+let mapResizeObserver: ResizeObserver | null = null;
 
 function markerStyleByValue(value: number): { radius: number; color: string } {
   if (value >= 100) {
@@ -78,7 +92,7 @@ function applyMarkerActiveStyle(marker: any): void {
 
 function showPopup(item: PanelDataMapAggregate, positionGcj02: [number, number]): void {
   const contentHTML = `
-    <div style="min-width:220px;background:#0f172acc;border:1px solid #334155;padding:12px;border-radius:12px;color:#e2e8f0;backdrop-filter: blur(6px);">
+    <div style="width:min(220px,calc(100vw - 72px));max-width:220px;background:#0f172acc;border:1px solid #334155;padding:12px;border-radius:12px;color:#e2e8f0;backdrop-filter: blur(6px);">
       <div style="font-weight:700;margin-bottom:6px;">${item.city}</div>
       <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">${item.province}</div>
       <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;">
@@ -122,6 +136,16 @@ function applyMapViewport(viewport: MapViewport | null | undefined): void {
 
   const centerGcj02 = gcoord.transform(viewport.center, gcoord.WGS84, gcoord.GCJ02) as [number, number];
   map.value.setZoomAndCenter(viewport.zoom, centerGcj02);
+}
+
+function syncMapSize(): void {
+  if (!map.value) {
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    map.value?.resize?.();
+  });
 }
 
 function focusAggregateOnMap(item: PanelDataMapAggregate, recenter: boolean): void {
@@ -230,8 +254,14 @@ onMounted(async () => {
     });
 
     map.value.on('complete', () => {
+      syncMapSize();
       renderMarkers(props.items);
     });
+
+    mapResizeObserver = new ResizeObserver(() => {
+      syncMapSize();
+    });
+    mapResizeObserver.observe(mapContainer.value);
   } catch (error) {
     console.error('Map initialization failed.', error);
     internalMapError.value = '地图初始化失败，已切换为聚合列表展示。';
@@ -274,6 +304,8 @@ watch(
 
 onUnmounted(() => {
   clearMarkers();
+  infoWindow?.close?.();
+  mapResizeObserver?.disconnect();
   if (map.value) {
     map.value.destroy();
   }
@@ -281,8 +313,8 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-    <div class="relative h-[520px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-950/95 shadow-inner">
+  <div class="space-y-4 lg:grid lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)] lg:items-start lg:gap-8 lg:space-y-0">
+    <div class="relative h-[45vh] min-h-[320px] max-h-[520px] overflow-hidden rounded-[26px] border border-black/[0.05] bg-slate-950/95 shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:min-h-[360px] lg:h-[520px] lg:max-h-none">
       <div v-if="!mapNotice" ref="mapContainer" class="h-full w-full"></div>
       <div v-else class="flex h-full items-center justify-center px-8 text-center text-sm text-slate-200">
         {{ mapNotice }}
@@ -310,15 +342,26 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <aside class="flex h-[520px] flex-col rounded-2xl border border-slate-200 bg-white p-5 shadow-sm dark:border-slate-800 dark:bg-dark-card">
-      <div class="mb-4 flex items-start justify-between gap-3">
+    <div class="lg:hidden">
+      <button
+        type="button"
+        class="apple-pill-primary w-full"
+        :disabled="loading || !hasMapPoints"
+        @click="showMobileDetails = true"
+      >
+        查看数据明细
+      </button>
+    </div>
+
+    <aside class="apple-card hidden min-h-0 flex-col p-4 sm:p-5 lg:flex lg:h-[520px] lg:max-h-none lg:p-6">
+      <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h3 class="text-lg font-semibold text-slate-900 dark:text-dark-text">地图聚合数据</h3>
           <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">
             当前展示 {{ items.length }} 个市级聚合点
           </p>
         </div>
-        <span class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+        <span class="inline-flex w-fit rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
           panel_data
         </span>
       </div>
@@ -330,26 +373,26 @@ onUnmounted(() => {
         暂无可展示的地图坐标数据
       </div>
 
-      <div v-else class="flex-1 overflow-y-auto pr-1">
+      <div v-else class="touch-scroll flex-1 overflow-y-auto pr-1">
         <div class="space-y-3">
           <button
             v-for="item in visibleItems"
             :key="buildAggregateKey(item)"
             type="button"
-            class="block w-full rounded-2xl border px-4 py-3 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+            class="block w-full rounded-[24px] border px-4 py-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
             :class="
               selectedKey === buildAggregateKey(item)
                 ? 'border-emerald-300 bg-emerald-50 shadow-sm dark:border-emerald-400/40 dark:bg-emerald-500/10'
-                : 'border-slate-100 bg-slate-50 hover:border-slate-200 dark:border-slate-800 dark:bg-slate-900/40'
+                : 'border-black/[0.04] bg-[#fbfbfd] hover:border-slate-200 dark:border-slate-800 dark:bg-slate-900/40'
             "
             @click="handleAggregateClick(item)"
           >
-            <div class="flex items-center justify-between gap-3">
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <p class="font-medium text-slate-900 dark:text-dark-text">{{ item.city || '未知城市' }}</p>
                 <p class="text-xs text-slate-500 dark:text-dark-text/60">{{ item.province }} · {{ item.year }}</p>
               </div>
-              <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+              <span class="inline-flex w-fit rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
                 已定位
               </span>
             </div>
@@ -365,6 +408,84 @@ onUnmounted(() => {
         </div>
       </div>
     </aside>
+  </div>
+
+  <div v-if="showMobileDetails" class="fixed inset-0 z-[70] lg:hidden">
+    <button
+      type="button"
+      class="absolute inset-0 h-full w-full bg-slate-950/45"
+      aria-label="关闭地图明细"
+      @click="showMobileDetails = false"
+    ></button>
+
+    <div class="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto rounded-t-[28px] bg-white p-4 shadow-[0_-16px_40px_rgba(15,23,42,0.16)] dark:bg-dark-card">
+      <div class="mb-4 flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-dark-text">地图数据明细</h3>
+          <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">当前展示 {{ items.length }} 个聚合点</p>
+        </div>
+        <button
+          type="button"
+          class="apple-pill-secondary min-h-[40px] px-4 py-2"
+          @click="showMobileDetails = false"
+        >
+          关闭
+        </button>
+      </div>
+
+      <div v-if="!hasMapPoints" class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+        暂无可查看的数据明细
+      </div>
+
+      <div
+        v-else
+        class="space-y-3"
+        @touchstart.passive="onTouchStart"
+        @touchend.passive="onTouchEnd"
+      >
+        <button
+          v-for="item in mobileItems"
+          :key="buildAggregateKey(item)"
+          type="button"
+          class="apple-subcard block w-full px-4 py-4 text-left"
+          @click="handleAggregateClick(item)"
+        >
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p class="font-medium text-slate-900 dark:text-dark-text">{{ item.city || '未知城市' }}</p>
+              <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">{{ item.province }} · {{ item.year }}</p>
+            </div>
+            <span class="inline-flex rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+              {{ item.count }} 条
+            </span>
+          </div>
+          <div class="mt-4 flex items-center justify-between text-sm">
+            <span class="text-slate-500 dark:text-dark-text/60">装机容量</span>
+            <span class="font-semibold text-slate-900 dark:text-dark-text">{{ item.value.toFixed(2) }} 万千瓦</span>
+          </div>
+        </button>
+
+        <div class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
+          <button
+            type="button"
+            class="min-h-[40px] rounded-full px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+            :disabled="!canPrevMobilePage"
+            @click="prevMobilePage"
+          >
+            上一页
+          </button>
+          <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
+          <button
+            type="button"
+            class="min-h-[40px] rounded-full px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+            :disabled="!canNextMobilePage"
+            @click="nextMobilePage"
+          >
+            下一页
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
