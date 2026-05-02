@@ -2,6 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --pv-page-bg:
+    radial-gradient(circle at top left, rgba(16, 185, 129, 0.16), transparent 34%),
+    radial-gradient(circle at top right, rgba(14, 165, 233, 0.14), transparent 32%),
+    linear-gradient(180deg, #effcf3 0%, #ecfeff 46%, #f8fafc 100%);
+  --pv-card-border: rgba(167, 243, 208, 0.72);
+  --pv-card-shadow: 0 16px 40px rgba(15, 118, 110, 0.08);
+  --pv-subcard-shadow: 0 12px 28px rgba(8, 145, 178, 0.08);
+  --pv-card-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 250, 252, 0.92) 100%);
+  --pv-subcard-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.96) 0%, rgba(240, 253, 244, 0.92) 100%);
+  --pv-table-bg: rgba(255, 255, 255, 0.92);
+  --pv-table-head-bg: linear-gradient(180deg, rgba(240, 253, 244, 0.96) 0%, rgba(236, 254, 255, 0.92) 100%);
+}
+
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -13,7 +27,8 @@
     width: 100%;
   }
   body {
-    @apply bg-[#f5f5f7] text-gray-800 dark:bg-dark-bg dark:text-dark-text transition-colors duration-300 antialiased font-inter;
+    background: var(--pv-page-bg);
+    @apply text-slate-800 dark:bg-dark-bg dark:text-dark-text transition-colors duration-300 antialiased font-inter;
     overflow-x: hidden;
   }
   img,
@@ -30,31 +45,63 @@
   }
 
   .apple-card {
-    @apply rounded-[26px] border border-black/[0.05] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.04)] lg:rounded-[32px] lg:shadow-[0_24px_60px_rgba(15,23,42,0.06)] dark:border-slate-800 dark:bg-dark-card dark:shadow-none;
+    border-color: var(--pv-card-border);
+    background: var(--pv-card-bg);
+    box-shadow: var(--pv-card-shadow);
+    @apply rounded-2xl border backdrop-blur-sm dark:border-slate-800 dark:bg-dark-card dark:shadow-none;
   }
 
   .apple-subcard {
-    @apply rounded-[22px] border border-black/[0.04] bg-[#fbfbfd] shadow-[0_1px_2px_rgba(15,23,42,0.02)] dark:border-slate-800 dark:bg-slate-900/40 dark:shadow-none;
+    border-color: rgba(209, 250, 229, 0.88);
+    background: var(--pv-subcard-bg);
+    box-shadow: var(--pv-subcard-shadow);
+    @apply rounded-2xl border dark:border-slate-800 dark:bg-slate-900/40 dark:shadow-none;
   }
 
   .apple-input {
-    @apply min-h-[46px] w-full min-w-0 rounded-[18px] border border-slate-200 bg-[#f7f7fa] px-4 py-3 text-sm text-slate-800 outline-none transition focus:border-slate-300 focus:bg-white focus:ring-0 dark:border-slate-700 dark:bg-dark-bg dark:text-dark-text;
+    background-color: rgba(255, 255, 255, 0.88);
+    @apply min-h-[46px] w-full min-w-0 rounded-xl border border-emerald-100 px-4 py-3 text-sm text-slate-700 outline-none transition shadow-[inset_0_1px_2px_rgba(15,23,42,0.02)] focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100 dark:border-slate-700 dark:bg-dark-bg dark:text-dark-text dark:focus:border-emerald-400 dark:focus:ring-emerald-500/20;
   }
 
   .apple-pill-primary {
-    @apply inline-flex min-h-[46px] items-center justify-center rounded-full bg-slate-900 px-5 py-3 text-sm font-medium text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-[46px] items-center justify-center rounded-full bg-emerald-600 px-5 py-3 text-sm font-medium text-white shadow-[0_12px_28px_rgba(16,185,129,0.22)] transition hover:bg-emerald-700 hover:shadow-[0_14px_30px_rgba(5,150,105,0.24)] disabled:cursor-not-allowed disabled:opacity-60;
   }
 
   .apple-pill-secondary {
-    @apply inline-flex min-h-[46px] items-center justify-center rounded-full border border-slate-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80 dark:hover:border-slate-600 dark:hover:bg-slate-900/60;
+    background-color: rgba(255, 255, 255, 0.82);
+    @apply inline-flex min-h-[46px] items-center justify-center rounded-full border border-emerald-200 px-5 py-3 text-sm font-medium text-emerald-700 shadow-sm transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-emerald-500/20 dark:bg-dark-card dark:text-emerald-300 dark:hover:border-emerald-400/30 dark:hover:bg-slate-900/70;
   }
 
   .apple-section-title {
-    @apply text-[1.75rem] font-semibold tracking-[-0.04em] text-slate-950 lg:text-[2.4rem] dark:text-dark-text;
+    @apply text-[1.75rem] font-semibold tracking-[-0.03em] text-slate-900 lg:text-[2.2rem] dark:text-dark-text;
   }
 
   .apple-section-copy {
-    @apply text-sm leading-6 text-slate-500 lg:text-base lg:leading-7 dark:text-dark-text/60;
+    @apply text-sm leading-6 text-slate-600 lg:text-base lg:leading-7 dark:text-dark-text/60;
+  }
+
+  .apple-compact-copy {
+    @apply text-sm leading-6 text-slate-600 dark:text-dark-text/60;
+  }
+
+  .panel-table-shell {
+    background: var(--pv-table-bg);
+    @apply overflow-hidden rounded-2xl border border-emerald-100/80 shadow-sm dark:border-slate-800 dark:bg-slate-900/30;
+  }
+
+  .panel-table-head {
+    background: var(--pv-table-head-bg);
+    @apply text-slate-600 dark:bg-slate-900/70 dark:text-dark-text/70;
+  }
+
+  .panel-page-btn {
+    background-color: rgba(255, 255, 255, 0.9);
+    @apply min-h-[40px] rounded-xl border border-emerald-100 px-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 disabled:opacity-40 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80 dark:hover:border-emerald-400/20 dark:hover:bg-slate-900/70;
+  }
+
+  .panel-soft-cell {
+    background-color: rgba(255, 255, 255, 0.9);
+    @apply rounded-xl border border-emerald-100/80 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-slate-800 dark:bg-slate-950/40;
   }
 }
 

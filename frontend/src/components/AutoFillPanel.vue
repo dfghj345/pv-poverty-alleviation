@@ -293,7 +293,7 @@ watch(
 
         <div
           v-if="!hasSelection"
-          class="mt-6 rounded-2xl border border-dashed border-slate-200 px-6 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
+          class="mt-6 rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 px-6 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
         >
           请先在地图或聚合列表中选择一条数据
         </div>
@@ -314,7 +314,7 @@ watch(
               <div
                 v-for="item in detailRows"
                 :key="item.label"
-                class="rounded-[20px] border border-white/70 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.02)] dark:border-slate-800 dark:bg-slate-950/40"
+                class="rounded-2xl border border-emerald-100/80 bg-white/90 px-4 py-3 shadow-[0_10px_24px_rgba(15,118,110,0.06)] dark:border-slate-800 dark:bg-slate-950/40"
               >
                 <p class="text-xs uppercase tracking-[0.16em] text-slate-400">{{ item.label }}</p>
                 <p class="mt-2 text-sm font-medium text-slate-900 dark:text-dark-text">{{ item.value }}</p>
@@ -339,7 +339,7 @@ watch(
         </div>
       </div>
 
-      <div class="min-w-0 w-1/2 shrink-0 border-l border-slate-200 p-4 dark:border-slate-800 sm:p-6 md:w-full md:border-l-0 lg:p-8">
+      <div class="min-w-0 w-1/2 shrink-0 border-l border-emerald-100/80 p-4 dark:border-slate-800 sm:p-6 md:w-full md:border-l-0 lg:p-8">
         <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-sm text-slate-500 dark:text-dark-text/60">关键字段</p>
@@ -368,7 +368,7 @@ watch(
 
           <div
             v-else-if="!detailLoading && recordRows.length === 0"
-            class="mt-4 rounded-xl border border-dashed border-slate-200 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
+            class="mt-4 rounded-xl border border-dashed border-emerald-200/80 bg-white/70 px-4 py-6 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
           >
             当前只有聚合信息，暂无更多明细字段
           </div>
@@ -377,7 +377,7 @@ watch(
             <div
               v-for="item in recordRows"
               :key="item.label"
-              class="rounded-[20px] border border-white/70 bg-white px-4 py-3 shadow-[0_1px_2px_rgba(15,23,42,0.02)] dark:border-slate-800 dark:bg-slate-950/40"
+              class="rounded-2xl border border-emerald-100/80 bg-white/90 px-4 py-3 shadow-[0_10px_24px_rgba(15,118,110,0.06)] dark:border-slate-800 dark:bg-slate-950/40"
             >
               <p class="text-xs uppercase tracking-[0.16em] text-slate-400">{{ item.label }}</p>
               <p class="mt-2 text-sm font-medium text-slate-900 dark:text-dark-text">{{ item.value }}</p>

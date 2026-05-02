@@ -92,19 +92,19 @@ function applyMarkerActiveStyle(marker: any): void {
 
 function showPopup(item: PanelDataMapAggregate, positionGcj02: [number, number]): void {
   const contentHTML = `
-    <div style="width:min(220px,calc(100vw - 72px));max-width:220px;background:#0f172acc;border:1px solid #334155;padding:12px;border-radius:12px;color:#e2e8f0;backdrop-filter: blur(6px);">
+    <div style="width:min(220px,calc(100vw - 72px));max-width:220px;background:rgba(255,255,255,0.95);border:1px solid rgba(167,243,208,0.85);padding:12px;border-radius:14px;color:#0f172a;box-shadow:0 18px 36px rgba(15,118,110,0.14);backdrop-filter: blur(8px);">
       <div style="font-weight:700;margin-bottom:6px;">${item.city}</div>
-      <div style="font-size:12px;color:#94a3b8;margin-bottom:4px;">${item.province}</div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;">
+      <div style="font-size:12px;color:#475569;margin-bottom:4px;">${item.province}</div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;">
         <span>年份</span>
         <span>${item.year}</span>
       </div>
-      <div style="display:flex;justify-content:space-between;font-size:12px;color:#94a3b8;">
+      <div style="display:flex;justify-content:space-between;font-size:12px;color:#64748b;">
         <span>记录数</span>
         <span>${item.count}</span>
       </div>
-      <div style="margin-top:8px;font-size:12px;color:#94a3b8;">装机容量</div>
-      <div style="font-size:20px;font-weight:700;color:#34d399;">${item.value.toFixed(2)} <span style="font-size:12px;color:#94a3b8;">万千瓦</span></div>
+      <div style="margin-top:8px;font-size:12px;color:#64748b;">装机容量</div>
+      <div style="font-size:20px;font-weight:700;color:#059669;">${item.value.toFixed(2)} <span style="font-size:12px;color:#64748b;">万千瓦</span></div>
     </div>
   `;
 
@@ -314,7 +314,7 @@ onUnmounted(() => {
 
 <template>
   <div class="space-y-4 lg:grid lg:grid-cols-[minmax(0,1.55fr)_minmax(320px,0.85fr)] lg:items-start lg:gap-8 lg:space-y-0">
-    <div class="relative h-[45vh] min-h-[320px] max-h-[520px] overflow-hidden rounded-[26px] border border-black/[0.05] bg-slate-950/95 shadow-[0_12px_30px_rgba(15,23,42,0.08)] sm:min-h-[360px] lg:h-[520px] lg:max-h-none">
+    <div class="relative h-[45vh] min-h-[320px] max-h-[520px] overflow-hidden rounded-2xl border border-emerald-100/80 bg-[radial-gradient(circle_at_top,_rgba(16,185,129,0.16),_transparent_36%),linear-gradient(180deg,_rgba(15,23,42,0.92),_rgba(15,118,110,0.68))] shadow-[0_16px_36px_rgba(15,118,110,0.12)] sm:min-h-[360px] lg:h-[520px] lg:max-h-none">
       <div v-if="!mapNotice" ref="mapContainer" class="h-full w-full"></div>
       <div v-else class="flex h-full items-center justify-center px-8 text-center text-sm text-slate-200">
         {{ mapNotice }}
@@ -322,21 +322,21 @@ onUnmounted(() => {
 
       <div
         v-if="loading"
-        class="absolute inset-0 flex items-center justify-center bg-slate-950/70 text-sm text-slate-100"
+        class="absolute inset-0 flex items-center justify-center bg-slate-950/58 text-sm text-slate-100 backdrop-blur-[1px]"
       >
         正在加载地图数据...
       </div>
 
       <div
         v-else-if="effectiveError"
-        class="absolute inset-0 flex items-center justify-center bg-slate-950/80 px-6 text-center text-sm text-slate-100"
+        class="absolute inset-0 flex items-center justify-center bg-slate-950/68 px-6 text-center text-sm text-slate-100 backdrop-blur-[1px]"
       >
         {{ effectiveError }}
       </div>
 
       <div
         v-else-if="!hasMapPoints"
-        class="absolute inset-0 flex items-center justify-center bg-slate-950/70 px-6 text-center text-sm text-slate-100"
+        class="absolute inset-0 flex items-center justify-center bg-slate-950/58 px-6 text-center text-sm text-slate-100 backdrop-blur-[1px]"
       >
         暂无可展示的地图坐标数据
       </div>
@@ -368,7 +368,7 @@ onUnmounted(() => {
 
       <div
         v-if="!loading && !hasMapPoints"
-        class="flex h-full items-center justify-center rounded-xl border border-dashed border-slate-200 px-4 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
+        class="flex h-full items-center justify-center rounded-xl border border-dashed border-emerald-200/80 bg-white/70 px-4 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60"
       >
         暂无可展示的地图坐标数据
       </div>
@@ -379,11 +379,11 @@ onUnmounted(() => {
             v-for="item in visibleItems"
             :key="buildAggregateKey(item)"
             type="button"
-            class="block w-full rounded-[24px] border px-4 py-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
+            class="block w-full rounded-2xl border px-4 py-4 text-left transition hover:-translate-y-0.5 hover:shadow-sm"
             :class="
               selectedKey === buildAggregateKey(item)
-                ? 'border-emerald-300 bg-emerald-50 shadow-sm dark:border-emerald-400/40 dark:bg-emerald-500/10'
-                : 'border-black/[0.04] bg-[#fbfbfd] hover:border-slate-200 dark:border-slate-800 dark:bg-slate-900/40'
+                ? 'border-emerald-300 bg-[linear-gradient(180deg,rgba(236,253,245,0.96),rgba(236,254,255,0.9))] shadow-sm dark:border-emerald-400/40 dark:bg-emerald-500/10'
+                : 'border-emerald-100/80 bg-white/90 hover:border-emerald-200 hover:bg-emerald-50/50 dark:border-slate-800 dark:bg-slate-900/40'
             "
             @click="handleAggregateClick(item)"
           >
@@ -413,12 +413,12 @@ onUnmounted(() => {
   <div v-if="showMobileDetails" class="fixed inset-0 z-[70] lg:hidden">
     <button
       type="button"
-      class="absolute inset-0 h-full w-full bg-slate-950/45"
+      class="absolute inset-0 h-full w-full bg-slate-900/35 backdrop-blur-sm"
       aria-label="关闭地图明细"
       @click="showMobileDetails = false"
     ></button>
 
-    <div class="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto rounded-t-[28px] bg-white p-4 shadow-[0_-16px_40px_rgba(15,23,42,0.16)] dark:bg-dark-card">
+    <div class="absolute inset-x-0 bottom-0 max-h-[75vh] overflow-y-auto rounded-t-[26px] border-t border-emerald-100/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(240,253,250,0.94))] p-4 shadow-[0_-16px_40px_rgba(15,118,110,0.16)] dark:border-slate-800 dark:bg-dark-card">
       <div class="mb-4 flex items-center justify-between gap-3">
         <div>
           <h3 class="text-lg font-semibold text-slate-900 dark:text-dark-text">地图数据明细</h3>
@@ -433,7 +433,7 @@ onUnmounted(() => {
         </button>
       </div>
 
-      <div v-if="!hasMapPoints" class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+      <div v-if="!hasMapPoints" class="rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
         暂无可查看的数据明细
       </div>
 
@@ -468,7 +468,7 @@ onUnmounted(() => {
         <div class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
           <button
             type="button"
-            class="min-h-[40px] rounded-full px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+            class="panel-page-btn"
             :disabled="!canPrevMobilePage"
             @click="prevMobilePage"
           >
@@ -477,7 +477,7 @@ onUnmounted(() => {
           <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
           <button
             type="button"
-            class="min-h-[40px] rounded-full px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+            class="panel-page-btn"
             :disabled="!canNextMobilePage"
             @click="nextMobilePage"
           >

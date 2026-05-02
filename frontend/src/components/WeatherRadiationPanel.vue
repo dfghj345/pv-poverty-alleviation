@@ -182,15 +182,15 @@ onMounted(async () => {
   <section id="weather-section" class="min-w-0 apple-card p-4 sm:p-6 lg:p-8">
     <div class="space-y-6">
       <div class="min-w-0">
-        <h3 class="text-xl font-bold tracking-[-0.03em] text-gray-900 dark:text-dark-text lg:text-[1.9rem]">天气与辐射（省市查询）</h3>
-        <p class="apple-compact-copy mt-2 text-gray-500 dark:text-dark-text/60">
+        <h3 class="text-xl font-bold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[1.9rem]">天气与辐射（省市查询）</h3>
+        <p class="apple-compact-copy mt-2 text-slate-500 dark:text-dark-text/60">
           按省份与城市快速查询辐射和利用小时。
         </p>
       </div>
 
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <div class="min-w-0">
-          <label class="mb-1 block text-xs text-gray-500 dark:text-dark-text/60">省份</label>
+          <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">省份</label>
           <select
             v-model="province"
             class="apple-input"
@@ -202,7 +202,7 @@ onMounted(async () => {
         </div>
 
         <div class="min-w-0">
-          <label class="mb-1 block text-xs text-gray-500 dark:text-dark-text/60">城市</label>
+          <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">城市</label>
           <select
             v-model="city"
             class="apple-input"
@@ -214,7 +214,7 @@ onMounted(async () => {
         </div>
 
         <div class="min-w-0">
-          <label class="mb-1 block text-xs text-gray-500 dark:text-dark-text/60">条数</label>
+          <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">条数</label>
           <input
             v-model.number="limit"
             type="number"
@@ -242,25 +242,25 @@ onMounted(async () => {
       </div>
     </div>
 
-    <div v-if="errorMsg" class="mb-4 text-sm text-red-600 dark:text-red-400">
+    <div v-if="errorMsg" class="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
       {{ errorMsg }}
     </div>
-    <div v-if="infoMsg" class="mb-4 text-sm text-amber-600 dark:text-amber-400">
+    <div v-if="infoMsg" class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
       {{ infoMsg }}
     </div>
 
     <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <div class="apple-subcard p-3 sm:p-4">
-        <p class="text-xs text-gray-500 dark:text-dark-text/60">最新日期</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-dark-text mt-1">{{ latest?.day ?? '-' }}</p>
+      <div class="apple-subcard border-emerald-100/80 bg-emerald-50/60 p-3 sm:p-4 dark:border-emerald-800/30 dark:bg-emerald-900/12">
+        <p class="text-xs text-slate-500 dark:text-dark-text/60">最新日期</p>
+        <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ latest?.day ?? '-' }}</p>
       </div>
-      <div class="apple-subcard p-3 sm:p-4">
-        <p class="text-xs text-gray-500 dark:text-dark-text/60">年辐射量 (kWh/m²)</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-dark-text mt-1">{{ summary.annual ?? '-' }}</p>
+      <div class="apple-subcard border-cyan-100/80 bg-cyan-50/60 p-3 sm:p-4 dark:border-cyan-800/30 dark:bg-cyan-900/12">
+        <p class="text-xs text-slate-500 dark:text-dark-text/60">年辐射量 (kWh/m²)</p>
+        <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ summary.annual ?? '-' }}</p>
       </div>
-      <div class="apple-subcard p-3 sm:p-4">
-        <p class="text-xs text-gray-500 dark:text-dark-text/60">等效利用小时数 (h)</p>
-        <p class="text-lg font-semibold text-gray-900 dark:text-dark-text mt-1">{{ summary.eqh ?? '-' }}</p>
+      <div class="apple-subcard border-sky-100/80 bg-sky-50/60 p-3 sm:p-4 dark:border-sky-800/30 dark:bg-sky-900/12">
+        <p class="text-xs text-slate-500 dark:text-dark-text/60">等效利用小时数 (h)</p>
+        <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ summary.eqh ?? '-' }}</p>
       </div>
     </div>
 
@@ -287,21 +287,21 @@ onMounted(async () => {
         >
           <div class="flex items-start justify-between gap-3">
             <div>
-              <p class="text-sm font-semibold text-gray-900 dark:text-dark-text">{{ item.day }}</p>
-              <p class="mt-1 text-xs text-gray-500 dark:text-dark-text/60">日辐射 {{ item.shortwave_radiation_sum_kwh_m2 }}</p>
+              <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ item.day }}</p>
+              <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">日辐射 {{ item.shortwave_radiation_sum_kwh_m2 }}</p>
             </div>
             <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
               {{ item.temperature_mean_c ?? '-' }} °C
             </span>
           </div>
           <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div class="rounded-[18px] bg-white px-3 py-2 dark:bg-dark-card">
-              <p class="text-xs text-gray-500 dark:text-dark-text/60">降水</p>
-              <p class="mt-1 font-medium text-gray-900 dark:text-dark-text">{{ item.precipitation_sum_mm ?? '-' }} mm</p>
+            <div class="panel-soft-cell">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">降水</p>
+              <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.precipitation_sum_mm ?? '-' }} mm</p>
             </div>
-            <div class="rounded-[18px] bg-white px-3 py-2 dark:bg-dark-card">
-              <p class="text-xs text-gray-500 dark:text-dark-text/60">风速</p>
-              <p class="mt-1 font-medium text-gray-900 dark:text-dark-text">{{ item.wind_speed_mean_m_s ?? '-' }} m/s</p>
+            <div class="panel-soft-cell">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">风速</p>
+              <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.wind_speed_mean_m_s ?? '-' }} m/s</p>
             </div>
           </div>
         </article>
@@ -309,7 +309,7 @@ onMounted(async () => {
         <div class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
           <button
             type="button"
-            class="min-h-[40px] rounded-full px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+            class="panel-page-btn"
             :disabled="!canPrevMobilePage"
             @click="prevMobilePage"
           >
@@ -318,7 +318,7 @@ onMounted(async () => {
           <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
           <button
             type="button"
-            class="min-h-[40px] rounded-full px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+            class="panel-page-btn"
             :disabled="!canNextMobilePage"
             @click="nextMobilePage"
           >
@@ -328,16 +328,16 @@ onMounted(async () => {
       </div>
     </div>
     <div class="space-y-3 md:hidden">
-      <div v-if="rows.length === 0" class="rounded-[22px] border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-dark-text/60">
+      <div v-if="rows.length === 0" class="rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 px-4 py-6 text-center text-sm text-slate-500 dark:border-gray-700 dark:text-dark-text/60">
         暂无数据。请切换省市重试。
       </div>
     </div>
 
-    <div class="hidden overflow-hidden rounded-[24px] border border-black/[0.05] bg-[#fbfbfd] md:block dark:border-slate-800 dark:bg-slate-900/30">
+    <div class="panel-table-shell hidden md:block">
       <div class="touch-scroll overflow-x-auto">
         <table class="min-w-full text-xs sm:text-sm">
-          <thead class="bg-gray-50 dark:bg-dark-bg">
-            <tr class="text-left text-gray-600 dark:text-dark-text/70">
+          <thead class="panel-table-head">
+            <tr class="text-left dark:text-dark-text/70">
               <th class="px-4 py-3 font-medium">日期</th>
               <th class="px-4 py-3 font-medium">日辐射 (kWh/m²)</th>
               <th class="px-4 py-3 font-medium">均温(°C)</th>
@@ -345,16 +345,16 @@ onMounted(async () => {
               <th class="px-4 py-3 font-medium">风速(m/s)</th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-dark-card">
-            <tr v-for="r in rows" :key="`${r.day}-${r.latitude}-${r.longitude}`" class="border-t border-gray-100 dark:border-gray-800">
-              <td class="px-4 py-3 text-gray-900 dark:text-dark-text">{{ r.day }}</td>
-              <td class="px-4 py-3 text-gray-900 dark:text-dark-text">{{ r.shortwave_radiation_sum_kwh_m2 }}</td>
-              <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ r.temperature_mean_c ?? '-' }}</td>
-              <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ r.precipitation_sum_mm ?? '-' }}</td>
-              <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ r.wind_speed_mean_m_s ?? '-' }}</td>
+          <tbody class="bg-white/80 dark:bg-dark-card">
+            <tr v-for="r in rows" :key="`${r.day}-${r.latitude}-${r.longitude}`" class="border-t border-emerald-100/70 transition hover:bg-emerald-50/50 dark:border-gray-800 dark:hover:bg-slate-900/40">
+              <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ r.day }}</td>
+              <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ r.shortwave_radiation_sum_kwh_m2 }}</td>
+              <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.temperature_mean_c ?? '-' }}</td>
+              <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.precipitation_sum_mm ?? '-' }}</td>
+              <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.wind_speed_mean_m_s ?? '-' }}</td>
             </tr>
-            <tr v-if="rows.length === 0" class="border-t border-gray-100 dark:border-gray-800">
-              <td class="px-4 py-6 text-center text-gray-500 dark:text-dark-text/60" colspan="5">
+            <tr v-if="rows.length === 0" class="border-t border-emerald-100/70 dark:border-gray-800">
+              <td class="px-4 py-6 text-center text-slate-500 dark:text-dark-text/60" colspan="5">
                 暂无数据。请切换省市重试。
               </td>
             </tr>

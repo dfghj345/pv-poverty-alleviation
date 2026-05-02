@@ -125,25 +125,25 @@ const summaryCards = computed(() => [
     title: '总记录数',
     value: formatInteger(props.stats?.total_count ?? 0),
     accent: 'text-emerald-600 dark:text-emerald-300',
-    tone: 'bg-emerald-50 dark:bg-emerald-500/10',
+    tone: 'border-emerald-200/80 bg-emerald-50/85 dark:border-emerald-500/20 dark:bg-emerald-500/10',
   },
   {
     title: '覆盖省份',
     value: formatInteger(props.stats?.province_count ?? 0),
     accent: 'text-cyan-600 dark:text-cyan-300',
-    tone: 'bg-cyan-50 dark:bg-cyan-500/10',
+    tone: 'border-cyan-200/80 bg-cyan-50/85 dark:border-cyan-500/20 dark:bg-cyan-500/10',
   },
   {
     title: '覆盖城市',
     value: formatInteger(props.stats?.city_count ?? 0),
     accent: 'text-amber-600 dark:text-amber-300',
-    tone: 'bg-amber-50 dark:bg-amber-500/10',
+    tone: 'border-amber-200/80 bg-amber-50/85 dark:border-amber-500/20 dark:bg-amber-500/10',
   },
   {
     title: '覆盖年份',
     value: formatInteger(props.stats?.year_count ?? 0),
-    accent: 'text-rose-600 dark:text-rose-300',
-    tone: 'bg-rose-50 dark:bg-rose-500/10',
+    accent: 'text-rose-500 dark:text-rose-300',
+    tone: 'border-rose-200/80 bg-rose-50/80 dark:border-rose-500/20 dark:bg-rose-500/10',
   },
 ]);
 
@@ -456,7 +456,7 @@ onUnmounted(() => {
       <article
         v-for="card in summaryCards"
         :key="card.title"
-        class="apple-card p-3.5 transition hover:-translate-y-0.5 sm:p-4 lg:rounded-[30px] lg:p-7"
+        class="apple-card p-3.5 transition hover:-translate-y-0.5 sm:p-4 lg:p-6"
         :class="card.tone"
       >
         <p class="text-xs text-slate-500 dark:text-dark-text/60 sm:text-sm">{{ card.title }}</p>
@@ -679,7 +679,7 @@ onUnmounted(() => {
         <div v-if="loading.stats" class="flex h-72 items-center justify-center text-sm text-slate-500 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           正在加载省份图表...
         </div>
-        <div v-else-if="!hasStatsData" class="flex h-72 items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
+        <div v-else-if="!hasStatsData" class="flex h-72 items-center justify-center rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           暂无省份统计数据
         </div>
         <div v-else ref="provinceChartRef" class="h-72 w-full sm:h-80 lg:h-[380px]"></div>
@@ -698,7 +698,7 @@ onUnmounted(() => {
         <div v-if="loading.stats" class="flex h-72 items-center justify-center text-sm text-slate-500 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           正在加载年份趋势...
         </div>
-        <div v-else-if="!hasStatsData" class="flex h-72 items-center justify-center rounded-2xl border border-dashed border-slate-200 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
+        <div v-else-if="!hasStatsData" class="flex h-72 items-center justify-center rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60 sm:h-80 lg:h-[380px]">
           暂无年份统计数据
         </div>
         <div v-else ref="trendChartRef" class="h-72 w-full sm:h-80 lg:h-[380px]"></div>
@@ -721,7 +721,7 @@ onUnmounted(() => {
         <div class="flex items-center gap-3">
           <label class="text-sm text-slate-500 dark:text-dark-text/60">每页</label>
           <select
-            class="apple-input rounded-[16px] px-3 py-2"
+            class="apple-input rounded-xl px-3 py-2"
             :value="query.page_size"
             @change="changePageSize"
           >
@@ -755,10 +755,10 @@ onUnmounted(() => {
         @touchstart.passive="onMobileTableTouchStart"
         @touchend.passive="onMobileTableTouchEnd"
       >
-        <div v-if="loading.list" class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+        <div v-if="loading.list" class="rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
           正在加载明细数据...
         </div>
-        <div v-else-if="tableData.items.length === 0" class="rounded-2xl border border-dashed border-slate-200 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
+        <div v-else-if="tableData.items.length === 0" class="rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 px-4 py-10 text-center text-sm text-slate-500 dark:border-slate-700 dark:text-dark-text/60">
           当前筛选条件下暂无数据
         </div>
         <template v-else>
@@ -777,29 +777,29 @@ onUnmounted(() => {
             </div>
 
             <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+              <div class="panel-soft-cell">
                 <p class="text-xs text-slate-400">人均收入</p>
                 <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ formatNumber(item.disposable_income_per_capita_yuan, 0) }} 元</p>
               </div>
-              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+              <div class="panel-soft-cell">
                 <p class="text-xs text-slate-400">GDP</p>
                 <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ formatNumber(item.gdp_100m_yuan) }} 亿元</p>
               </div>
-              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+              <div class="panel-soft-cell">
                 <p class="text-xs text-slate-400">PM2.5</p>
                 <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ formatNumber(item.pm25_annual_avg_ug_per_m3) }}</p>
               </div>
-              <div class="rounded-xl bg-white px-3 py-2 dark:bg-slate-950/60">
+              <div class="panel-soft-cell">
                 <p class="text-xs text-slate-400">年份</p>
                 <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.year }}</p>
               </div>
             </div>
           </article>
 
-          <div class="flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-white px-3 py-2 dark:border-slate-700 dark:bg-dark-card">
+          <div class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
             <button
               type="button"
-              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              class="panel-page-btn"
               :disabled="!canPrevMobileTablePage"
               @click="prevMobileTablePage"
             >
@@ -807,7 +807,7 @@ onUnmounted(() => {
             <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobileTablePage + 1 }} / {{ mobileTableTotalPages }}</span>
             <button
               type="button"
-              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              class="panel-page-btn"
               :disabled="!canNextMobileTablePage"
               @click="nextMobileTablePage"
             >
@@ -816,9 +816,9 @@ onUnmounted(() => {
         </template>
       </div>
 
-      <div class="touch-scroll mt-5 hidden overflow-x-auto rounded-[24px] border border-black/[0.05] bg-[#fbfbfd] md:block dark:border-slate-800 dark:bg-slate-900/30">
+      <div class="panel-table-shell touch-scroll mt-5 hidden overflow-x-auto md:block">
         <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
-          <thead class="bg-slate-50 text-slate-500 dark:bg-slate-900/50 dark:text-dark-text/60">
+          <thead class="panel-table-head">
             <tr>
               <th class="px-4 py-3 font-medium">省份</th>
               <th class="px-4 py-3 font-medium">城市</th>
@@ -844,7 +844,7 @@ onUnmounted(() => {
               v-for="item in tableData.items"
               v-else
               :key="item.id"
-              class="transition hover:bg-slate-50/80 dark:hover:bg-slate-900/40"
+              class="transition hover:bg-emerald-50/60 dark:hover:bg-slate-900/40"
             >
               <td class="px-4 py-3 font-medium text-slate-900 dark:text-dark-text">{{ item.province }}</td>
               <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ item.city }}</td>
@@ -864,18 +864,18 @@ onUnmounted(() => {
         </table>
       </div>
 
-      <div class="mt-5 flex flex-col gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
+      <div class="mt-5 flex flex-col gap-3 border-t border-emerald-100/80 pt-4 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800">
         <p class="text-sm text-slate-500 dark:text-dark-text/60">
           第 {{ query.page }} / {{ totalPages }} 页</p>
         <div class="grid grid-cols-2 gap-3 sm:flex sm:items-center">
           <button
-            class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-dark-text/80 sm:w-auto"
+            class="panel-page-btn w-full sm:w-auto"
             :disabled="!canPrevPage"
             @click="goToPage(query.page - 1)"
           >
             上一页</button>
           <button
-            class="w-full rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-700 transition disabled:cursor-not-allowed disabled:opacity-50 dark:border-slate-700 dark:text-dark-text/80 sm:w-auto"
+            class="panel-page-btn w-full sm:w-auto"
             :disabled="!canNextPage"
             @click="goToPage(query.page + 1)"
           >
@@ -889,7 +889,7 @@ onUnmounted(() => {
       class="space-y-8 lg:space-y-10"
     >
       <div>
-        <p class="text-sm uppercase tracking-[0.28em] text-slate-400">Toolkit</p>
+        <p class="text-sm uppercase tracking-[0.28em] text-teal-600">Toolkit</p>
         <h4 class="mt-2 text-2xl font-semibold tracking-[-0.04em] text-slate-900 dark:text-dark-text lg:text-[2rem]">业务辅助面板</h4>
       </div>
 
@@ -900,7 +900,7 @@ onUnmounted(() => {
               <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">数据工具</p>
               <p class="apple-compact-copy mt-2">先选择一个工具，再查看表单、结果和应用动作。</p>
             </div>
-            <span class="rounded-full bg-slate-900 px-3 py-1 text-xs font-medium text-white dark:bg-slate-100 dark:text-slate-900">
+            <span class="rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white shadow-[0_8px_20px_rgba(16,185,129,0.2)] dark:bg-emerald-500 dark:text-white">
               {{ mobileToolItems.length }} 个</span>
           </div>
 
@@ -909,7 +909,7 @@ onUnmounted(() => {
               v-for="tool in mobileToolItems"
               :key="tool.key"
               type="button"
-              class="apple-subcard px-4 py-4 text-left transition hover:border-slate-300"
+              class="apple-subcard px-4 py-4 text-left transition hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-slate-900/70"
               @click="selectMobileTool(tool.key)"
             >
               <span class="block text-sm font-medium text-slate-900 dark:text-dark-text">{{ tool.label }}</span>

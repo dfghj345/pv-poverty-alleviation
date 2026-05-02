@@ -89,14 +89,14 @@ onMounted(async () => {
       <div class="min-w-0 w-1/2 shrink-0 p-4 sm:p-6 md:w-full lg:p-8">
         <div class="space-y-6">
           <div>
-            <h3 class="text-xl font-bold tracking-[-0.03em] text-gray-900 dark:text-dark-text lg:text-[1.9rem]">发电量分析</h3>
-            <p class="apple-compact-copy mt-1 text-gray-500 dark:text-dark-text/60">
+            <h3 class="text-xl font-bold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[1.9rem]">发电量分析</h3>
+            <p class="apple-compact-copy mt-1 text-slate-500 dark:text-dark-text/60">
               按省份和项目类型筛选发电数据，并在当前卡片查看结果。
             </p>
           </div>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <div class="min-w-0">
-              <label class="mb-1 block text-xs text-gray-500 dark:text-dark-text/60">省份</label>
+              <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">省份</label>
               <select
                 v-model="province"
                 class="apple-input"
@@ -107,7 +107,7 @@ onMounted(async () => {
               </select>
             </div>
             <div class="min-w-0">
-              <label class="mb-1 block text-xs text-gray-500 dark:text-dark-text/60">类型</label>
+              <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">类型</label>
               <input
                 v-model="projectType"
                 type="text"
@@ -116,7 +116,7 @@ onMounted(async () => {
               />
             </div>
             <div class="min-w-0">
-              <label class="mb-1 block text-xs text-gray-500 dark:text-dark-text/60">条数</label>
+              <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">条数</label>
               <input
                 v-model.number="limit"
                 type="number"
@@ -149,11 +149,11 @@ onMounted(async () => {
         </button>
       </div>
 
-      <div class="min-w-0 w-1/2 shrink-0 border-l border-gray-100 p-4 dark:border-gray-800 sm:p-6 md:w-full md:border-l-0 lg:p-8">
+      <div class="min-w-0 w-1/2 shrink-0 border-l border-emerald-100/80 p-4 dark:border-slate-800 sm:p-6 md:w-full md:border-l-0 lg:p-8">
         <div class="mb-4 flex items-center justify-between gap-3">
           <div>
-            <h4 class="text-lg font-semibold text-gray-900 dark:text-dark-text">发电量结果</h4>
-            <p class="mt-1 text-sm text-gray-500 dark:text-dark-text/60">当前展示：{{ totalShown }} 条</p>
+            <h4 class="text-lg font-semibold text-slate-900 dark:text-dark-text">发电量结果</h4>
+            <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">当前展示：{{ totalShown }} 条</p>
           </div>
           <button
             type="button"
@@ -169,7 +169,7 @@ onMounted(async () => {
           @touchstart.passive="onTouchStart"
           @touchend.passive="onTouchEnd"
         >
-          <div v-if="rows.length === 0" class="rounded-lg border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:text-dark-text/60">
+          <div v-if="rows.length === 0" class="rounded-lg border border-dashed border-emerald-200/80 bg-white/70 px-4 py-6 text-center text-sm text-slate-500 dark:border-gray-700 dark:text-dark-text/60">
             暂无数据。
           </div>
           <article
@@ -177,20 +177,20 @@ onMounted(async () => {
             :key="`mobile-${row.project_name}-${index}`"
             class="apple-subcard p-4"
           >
-            <p class="text-sm font-semibold text-gray-900 dark:text-dark-text">{{ row.project_name }}</p>
-            <p class="mt-1 text-xs text-gray-500 dark:text-dark-text/60">{{ row.province ?? '-' }} · {{ row.project_type ?? '-' }}</p>
+            <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ row.project_name }}</p>
+            <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">{{ row.province ?? '-' }} · {{ row.project_type ?? '-' }}</p>
             <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div class="rounded-[18px] bg-white px-3 py-2 dark:bg-dark-card">
-                <p class="text-xs text-gray-500 dark:text-dark-text/60">容量</p>
-                <p class="mt-1 font-medium text-gray-900 dark:text-dark-text">{{ row.capacity_kw ?? '-' }} kW</p>
+              <div class="panel-soft-cell">
+                <p class="text-xs text-slate-500 dark:text-dark-text/60">容量</p>
+                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.capacity_kw ?? '-' }} kW</p>
               </div>
-              <div class="rounded-[18px] bg-white px-3 py-2 dark:bg-dark-card">
-                <p class="text-xs text-gray-500 dark:text-dark-text/60">年发电</p>
-                <p class="mt-1 font-medium text-gray-900 dark:text-dark-text">{{ row.annual_generation_kwh ?? '-' }} kWh</p>
+              <div class="panel-soft-cell">
+                <p class="text-xs text-slate-500 dark:text-dark-text/60">年发电</p>
+                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.annual_generation_kwh ?? '-' }} kWh</p>
               </div>
-              <div class="col-span-2 rounded-[18px] bg-white px-3 py-2 dark:bg-dark-card">
-                <p class="text-xs text-gray-500 dark:text-dark-text/60">年收益</p>
-                <p class="mt-1 font-medium text-gray-900 dark:text-dark-text">{{ row.annual_income_yuan ?? '-' }} 元</p>
+              <div class="panel-soft-cell col-span-2">
+                <p class="text-xs text-slate-500 dark:text-dark-text/60">年收益</p>
+                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.annual_income_yuan ?? '-' }} 元</p>
               </div>
             </div>
           </article>
@@ -198,7 +198,7 @@ onMounted(async () => {
           <div v-if="rows.length > 0" class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
             <button
               type="button"
-              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              class="panel-page-btn"
               :disabled="!canPrevMobilePage"
               @click="prevMobilePage"
             >
@@ -207,7 +207,7 @@ onMounted(async () => {
             <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
             <button
               type="button"
-              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              class="panel-page-btn"
               :disabled="!canNextMobilePage"
               @click="nextMobilePage"
             >
@@ -216,10 +216,10 @@ onMounted(async () => {
           </div>
         </div>
 
-        <div class="touch-scroll hidden overflow-x-auto rounded-lg border border-gray-100 dark:border-gray-800 md:block">
+        <div class="panel-table-shell touch-scroll hidden overflow-x-auto md:block">
           <table class="min-w-full text-xs sm:text-sm">
-            <thead class="bg-gray-50 dark:bg-dark-bg">
-              <tr class="text-left text-gray-600 dark:text-dark-text/70">
+            <thead class="panel-table-head">
+              <tr class="text-left dark:text-dark-text/70">
                 <th class="px-4 py-3 font-medium">项目</th>
                 <th class="px-4 py-3 font-medium">省份</th>
                 <th class="px-4 py-3 font-medium">容量(kW)</th>
@@ -229,18 +229,18 @@ onMounted(async () => {
                 <th class="px-4 py-3 font-medium">年份</th>
               </tr>
             </thead>
-            <tbody class="bg-white dark:bg-dark-card">
-              <tr v-for="(row, index) in rows" :key="`${row.project_name}-${index}`" class="border-t border-gray-100 dark:border-gray-800">
-                <td class="px-4 py-3 text-gray-900 dark:text-dark-text">{{ row.project_name }}</td>
-                <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ row.province ?? '-' }}</td>
-                <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ row.capacity_kw ?? '-' }}</td>
-                <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ row.annual_generation_kwh ?? '-' }}</td>
-                <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ row.annual_income_yuan ?? '-' }}</td>
-                <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ row.project_type ?? '-' }}</td>
-                <td class="px-4 py-3 text-gray-700 dark:text-dark-text/80">{{ row.effective_date ?? '-' }}</td>
+            <tbody class="bg-white/80 dark:bg-dark-card">
+              <tr v-for="(row, index) in rows" :key="`${row.project_name}-${index}`" class="border-t border-emerald-100/70 transition hover:bg-emerald-50/50 dark:border-gray-800 dark:hover:bg-slate-900/40">
+                <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ row.project_name }}</td>
+                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.province ?? '-' }}</td>
+                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.capacity_kw ?? '-' }}</td>
+                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.annual_generation_kwh ?? '-' }}</td>
+                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.annual_income_yuan ?? '-' }}</td>
+                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.project_type ?? '-' }}</td>
+                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.effective_date ?? '-' }}</td>
               </tr>
-              <tr v-if="rows.length === 0" class="border-t border-gray-100 dark:border-gray-800">
-                <td class="px-4 py-6 text-center text-gray-500 dark:text-dark-text/60" colspan="7">
+              <tr v-if="rows.length === 0" class="border-t border-emerald-100/70 dark:border-gray-800">
+                <td class="px-4 py-6 text-center text-slate-500 dark:text-dark-text/60" colspan="7">
                   暂无数据。
                 </td>
               </tr>

@@ -321,14 +321,14 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="min-h-screen overflow-x-clip bg-[#f5f5f7] text-slate-900 transition-colors duration-300 dark:bg-dark-bg dark:text-dark-text">
-    <nav class="sticky top-0 z-50 border-b border-black/[0.04] bg-white/82 shadow-[0_1px_18px_rgba(15,23,42,0.05)] backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-dark-card/90">
+  <div class="min-h-screen overflow-x-clip bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.14),_transparent_32%),linear-gradient(180deg,_#effcf3_0%,_#ecfeff_46%,_#f8fafc_100%)] text-slate-900 transition-colors duration-300 dark:bg-dark-bg dark:text-dark-text">
+    <nav class="sticky top-0 z-50 border-b border-emerald-100/80 bg-white/85 shadow-[0_8px_24px_rgba(15,118,110,0.08)] backdrop-blur-xl transition-all duration-300 dark:border-slate-800 dark:bg-dark-card/90">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="flex h-16 items-center justify-between gap-4">
           <div class="flex items-center gap-3">
             <button
               type="button"
-              class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-[18px] border border-black/[0.05] bg-white p-2 text-slate-700 shadow-[0_8px_24px_rgba(15,23,42,0.06)] transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text md:hidden"
+              class="inline-flex min-h-[44px] min-w-[44px] items-center justify-center rounded-2xl border border-emerald-100 bg-white/90 p-2 text-slate-700 shadow-[0_8px_24px_rgba(15,118,110,0.1)] transition hover:border-emerald-300 hover:bg-emerald-50/80 hover:text-emerald-700 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text md:hidden"
               :aria-expanded="isMobileNavOpen"
               aria-controls="mobile-nav-drawer"
               aria-label="切换导航"
@@ -338,14 +338,14 @@ onUnmounted(() => {
                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 7h16M4 12h16M4 17h16" />
               </svg>
             </button>
-            <span class="text-base font-semibold tracking-[-0.02em] text-slate-900 dark:text-dark-text sm:text-lg">光伏扶贫数据平台</span>
+            <span class="text-base font-semibold tracking-[-0.02em] text-slate-800 dark:text-dark-text sm:text-lg">光伏扶贫数据平台</span>
           </div>
           <div class="hidden items-center gap-1 md:flex lg:gap-2">
-            <a href="#home" class="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-slate-950 dark:text-dark-text/70">首页</a>
-            <a href="#data-stats" class="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-slate-950 dark:text-dark-text/70">数据总览</a>
-            <a href="#map-section" class="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-slate-950 dark:text-dark-text/70">地图展示</a>
-            <a href="#calculator-section" class="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-slate-950 dark:text-dark-text/70">收益测算</a>
-            <a href="#analytics-section" class="rounded-full px-4 py-2 text-sm font-medium text-slate-500 transition hover:bg-white/70 hover:text-slate-950 dark:text-dark-text/70">数据工具</a>
+            <a href="#home" class="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-dark-text/70">首页</a>
+            <a href="#data-stats" class="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-dark-text/70">数据总览</a>
+            <a href="#map-section" class="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-dark-text/70">地图展示</a>
+            <a href="#calculator-section" class="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-dark-text/70">收益测算</a>
+            <a href="#analytics-section" class="rounded-full px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-emerald-50 hover:text-emerald-700 dark:text-dark-text/70">数据工具</a>
             <button
               class="apple-pill-secondary min-h-[40px] px-4 py-2"
               @click="toggleTheme"
@@ -365,15 +365,15 @@ onUnmounted(() => {
     >
       <button
         type="button"
-        class="absolute inset-0 h-full w-full bg-slate-950/45 backdrop-blur-sm"
+        class="absolute inset-0 h-full w-full bg-slate-900/30 backdrop-blur-sm"
         aria-label="关闭导航菜单"
         @click="closeMobileNav"
       ></button>
       <aside
         id="mobile-nav-drawer"
-        class="touch-scroll absolute left-0 top-0 flex h-full w-[min(86vw,360px)] max-w-full flex-col overflow-y-auto border-r border-black/[0.05] bg-white px-5 pb-6 pt-20 shadow-[0_20px_40px_rgba(15,23,42,0.12)] dark:border-slate-800 dark:bg-dark-card"
+        class="touch-scroll absolute left-0 top-0 flex h-full w-[min(86vw,360px)] max-w-full flex-col overflow-y-auto border-r border-emerald-100/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.97),rgba(240,253,250,0.94))] px-5 pb-6 pt-20 shadow-[0_20px_40px_rgba(15,118,110,0.14)] dark:border-slate-800 dark:bg-dark-card"
       >
-        <div class="flex items-start justify-between gap-4 border-b border-slate-100 pb-5 dark:border-slate-800">
+        <div class="flex items-start justify-between gap-4 border-b border-emerald-100/80 pb-5 dark:border-slate-800">
           <div>
             <p class="text-xs uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-300">Quick Menu</p>
             <h2 class="mt-2 text-xl font-semibold text-slate-900 dark:text-dark-text">模块导航</h2>
@@ -381,7 +381,7 @@ onUnmounted(() => {
           </div>
           <button
             type="button"
-            class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-full border border-slate-200 bg-white text-slate-700 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80"
+            class="inline-flex min-h-[40px] min-w-[40px] items-center justify-center rounded-full border border-emerald-100 bg-white/90 text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-700 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80"
             aria-label="关闭导航"
             @click="closeMobileNav"
           >
@@ -396,24 +396,24 @@ onUnmounted(() => {
             v-for="item in mobileNavItems"
             :key="item.target"
             type="button"
-            class="min-h-[48px] rounded-[20px] border border-black/[0.05] bg-[#fbfbfd] px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 dark:border-slate-700 dark:bg-slate-900/50 dark:text-dark-text/80 dark:hover:bg-slate-900/70"
+            class="min-h-[48px] rounded-2xl border border-emerald-100/80 bg-white/90 px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50/80 hover:text-emerald-700 dark:border-slate-700 dark:bg-slate-900/50 dark:text-dark-text/80 dark:hover:bg-slate-900/70"
             @click="scrollToSection(item.target)"
           >
             {{ item.label }}
           </button>
         </div>
 
-        <div class="mt-6 grid gap-3 border-t border-slate-100 pt-5 dark:border-slate-800">
+        <div class="mt-6 grid gap-3 border-t border-emerald-100/80 pt-5 dark:border-slate-800">
           <button
             type="button"
-            class="min-h-[48px] rounded-full bg-slate-900 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-slate-800"
+            class="min-h-[48px] rounded-full bg-emerald-600 px-4 py-3 text-left text-sm font-medium text-white transition hover:bg-emerald-700"
             @click="scrollToSection('home')"
           >
             返回首页首屏
           </button>
           <button
             type="button"
-            class="min-h-[48px] rounded-full border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:text-slate-950 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80 dark:hover:border-slate-600 dark:hover:text-dark-text"
+            class="min-h-[48px] rounded-full border border-emerald-200 bg-white/90 px-4 py-3 text-left text-sm font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80 dark:hover:border-slate-600 dark:hover:text-dark-text"
             @click="toggleTheme"
           >
             切换到{{ isDark ? '浅色' : '深色' }}模式
@@ -422,10 +422,10 @@ onUnmounted(() => {
       </aside>
     </div>
 
-    <section id="home" class="bg-[radial-gradient(circle_at_top_left,_rgba(15,23,42,0.035),_transparent_36%),linear-gradient(180deg,_rgba(255,255,255,0.92),_rgba(245,245,247,0.98))] pt-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.18),_transparent_36%),linear-gradient(135deg,_rgba(15,23,42,0.9),_rgba(2,6,23,0.98))] sm:pt-10 md:pt-14 lg:pt-16">
+    <section id="home" class="bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.14),_transparent_32%),linear-gradient(180deg,_#effcf3_0%,_#ecfeff_46%,_#f8fafc_100%)] pt-8 dark:bg-[radial-gradient(circle_at_top_left,_rgba(16,185,129,0.16),_transparent_34%),radial-gradient(circle_at_top_right,_rgba(14,165,233,0.16),_transparent_32%),linear-gradient(180deg,_rgba(15,23,42,0.95)_0%,_rgba(15,118,110,0.16)_100%)] sm:pt-10 md:pt-14 lg:pt-16">
       <div class="mx-auto max-w-7xl px-4 pb-12 sm:px-6 sm:pb-20 lg:px-8 lg:pb-28">
         <div class="mx-auto max-w-md md:hidden">
-          <div class="relative overflow-hidden rounded-[34px] bg-slate-950 shadow-[0_24px_64px_rgba(15,23,42,0.18)]">
+          <div class="relative overflow-hidden rounded-[28px] border border-emerald-200/40 bg-[linear-gradient(135deg,rgba(15,118,110,0.94),rgba(14,165,233,0.76))] shadow-[0_22px_56px_rgba(15,118,110,0.18)]">
             <!-- 放大后的照片 -->
             <img
               :src="heroPhoto"
@@ -434,7 +434,7 @@ onUnmounted(() => {
             />
 
             <!-- 图片遮罩，保证文字清晰 -->
-            <div class="absolute inset-0 bg-gradient-to-b from-black/62 via-black/14 to-black/54"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-emerald-950/44 via-slate-900/10 to-slate-950/34"></div>
 
             <!-- 顶部文字 -->
             <div class="absolute inset-x-0 top-0 px-6 pt-8 text-center">
@@ -451,7 +451,7 @@ onUnmounted(() => {
 
             <!-- 底部说明文字 -->
             <div class="absolute inset-x-0 bottom-0 px-5 pb-5">
-              <div class="rounded-[24px] border border-white/16 bg-white/12 px-4 py-3.5 text-center text-white shadow-[0_16px_42px_rgba(0,0,0,0.16)] backdrop-blur-xl">
+              <div class="rounded-2xl border border-white/24 bg-white/16 px-4 py-3.5 text-center text-white shadow-[0_14px_36px_rgba(0,0,0,0.14)] backdrop-blur-xl">
                 <p class="text-[13px] leading-6 text-white/88">
                 基于真实政策、电价、天气辐射和区域数据，联动地图展示、数据看板与收益测算，快速验证光伏扶贫项目的落点与回报。
                 </p>
@@ -471,12 +471,12 @@ onUnmounted(() => {
         <div class="hidden items-center gap-10 md:grid lg:grid-cols-[minmax(0,1fr)_minmax(380px,0.92fr)] lg:gap-16 xl:gap-20">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.3em] text-emerald-600 dark:text-emerald-300">光伏扶贫数据平台</p>
-            <h1 class="mt-5 max-w-4xl text-5xl font-semibold leading-[0.95] tracking-[-0.05em] text-slate-950 dark:text-dark-text xl:text-6xl">
+            <h1 class="mt-5 max-w-4xl text-5xl font-semibold leading-[0.96] tracking-[-0.04em] text-slate-900 dark:text-dark-text xl:text-6xl">
               阳光变成收益
               <br />
               光伏助力乡村振兴
             </h1>
-            <p class="mt-6 max-w-xl text-lg leading-8 text-slate-500 dark:text-dark-text/72">
+            <p class="mt-6 max-w-xl text-lg leading-8 text-slate-600 dark:text-dark-text/72">
               基于真实政策、电价、天气辐射和区域数据，联动地图展示、数据看板与收益测算，帮助快速验证光伏扶贫项目的落点与回报。
             </p>
             <div class="mt-10 hidden gap-4 md:flex md:flex-wrap">
@@ -490,10 +490,10 @@ onUnmounted(() => {
           </div>
 
           <div class="relative mx-auto w-full max-w-xl lg:mx-0 lg:max-w-none">
-            <div class="absolute -left-8 top-10 h-36 w-36 rounded-full bg-emerald-400/10 blur-3xl"></div>
-            <div class="absolute -bottom-8 right-2 h-40 w-40 rounded-full bg-cyan-400/12 blur-3xl"></div>
+            <div class="absolute -left-8 top-10 h-36 w-36 rounded-full bg-emerald-400/16 blur-3xl"></div>
+            <div class="absolute -bottom-8 right-2 h-40 w-40 rounded-full bg-cyan-400/16 blur-3xl"></div>
             <div class="apple-card relative overflow-hidden p-4 lg:p-5">
-              <div class="relative aspect-[3/2] w-full overflow-hidden rounded-[28px] ring-1 ring-black/[0.04]">
+              <div class="relative aspect-[3/2] w-full overflow-hidden rounded-2xl ring-1 ring-emerald-100/80">
                 <img
                 :src="heroPhoto"
                 alt="光伏扶贫项目"
@@ -510,7 +510,7 @@ onUnmounted(() => {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col gap-4 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p class="text-sm uppercase tracking-[0.32em] text-slate-400">Overview</p>
+            <p class="text-sm uppercase tracking-[0.32em] text-emerald-600">Overview</p>
             <h2 class="apple-section-title mt-2">顶部统计与筛选</h2>
           </div>
           <p class="apple-section-copy apple-compact-copy max-w-2xl">
@@ -538,7 +538,7 @@ onUnmounted(() => {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col gap-4 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p class="text-sm uppercase tracking-[0.32em] text-slate-400">Spatial View</p>
+            <p class="text-sm uppercase tracking-[0.32em] text-cyan-600">Spatial View</p>
             <h2 class="apple-section-title mt-2">地图与聚合列表</h2>
           </div>
           <p class="apple-section-copy apple-compact-copy max-w-2xl">
@@ -563,7 +563,7 @@ onUnmounted(() => {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col gap-4 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p class="text-sm uppercase tracking-[0.32em] text-slate-400">Workflow</p>
+            <p class="text-sm uppercase tracking-[0.32em] text-teal-600">Workflow</p>
             <h2 class="apple-section-title mt-2">自动填参</h2>
           </div>
           <p class="apple-section-copy apple-compact-copy max-w-2xl">
@@ -583,7 +583,7 @@ onUnmounted(() => {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col gap-4 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p class="text-sm uppercase tracking-[0.32em] text-slate-400">Simulator</p>
+            <p class="text-sm uppercase tracking-[0.32em] text-emerald-600">Simulator</p>
             <h2 class="apple-section-title mt-2">收益仿真测算</h2>
           </div>
           <p class="apple-section-copy apple-compact-copy max-w-2xl">
@@ -598,7 +598,7 @@ onUnmounted(() => {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="mb-8 flex flex-col gap-4 lg:mb-12 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <p class="text-sm uppercase tracking-[0.32em] text-slate-400">Analytics</p>
+            <p class="text-sm uppercase tracking-[0.32em] text-cyan-600">Analytics</p>
             <h2 class="apple-section-title mt-2">图表与明细</h2>
           </div>
           <p class="apple-section-copy apple-compact-copy max-w-2xl">
@@ -621,7 +621,7 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <footer class="border-t border-slate-200 bg-slate-950 py-10 text-white dark:border-slate-800">
+    <footer class="border-t border-emerald-200/60 bg-[linear-gradient(135deg,#0f766e_0%,#0f172a_100%)] py-10 text-white dark:border-slate-800">
       <div class="container mx-auto px-4 text-center">
         <div class="flex items-center justify-center gap-2">
           <span class="text-2xl font-semibold text-emerald-400">PV</span>

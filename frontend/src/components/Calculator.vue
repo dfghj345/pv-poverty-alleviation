@@ -74,7 +74,7 @@ function backToForm(): void {
 </script>
 
 <template>
-  <div class="min-w-0 apple-card overflow-hidden bg-white dark:bg-dark-card">
+  <div class="min-w-0 apple-card overflow-hidden">
     <div
       class="flex w-[200%] transition-transform duration-300 ease-out md:block md:w-full md:transition-none lg:grid lg:grid-cols-12 lg:gap-8"
       :class="mobilePanel === 'result' ? '-translate-x-1/2 md:translate-x-0' : 'translate-x-0'"
@@ -82,25 +82,25 @@ function backToForm(): void {
       <div class="min-w-0 w-1/2 shrink-0 space-y-5 p-4 sm:p-6 md:w-full lg:col-span-5 lg:p-9">
       <div class="mb-6 flex items-center gap-2">
         <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
-        <h2 class="text-xl font-bold tracking-[-0.03em] text-gray-900 dark:text-dark-text lg:text-[2rem]">参数配置</h2>
+        <h2 class="text-xl font-bold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[2rem]">参数配置</h2>
       </div>
 
       <div
         v-if="!hasAutoFillSelection"
-        class="rounded-xl border border-dashed border-slate-200 bg-white px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/60"
+        class="rounded-xl border border-dashed border-emerald-200/80 bg-white/75 px-4 py-3 text-sm text-slate-500 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/60"
       >
         请选择地图聚合数据后可自动填参，也可以手动输入参数进行测算。
       </div>
 
       <form class="grid grid-cols-1 gap-4 sm:grid-cols-2" @submit.prevent="handleSubmit">
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-dark-text/80 mb-1">装机容量 (kW)</label>
+          <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-dark-text/80">装机容量 (kW)</label>
           <input v-model.number="form.capacity_kw" type="number" class="apple-input w-full text-base" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-dark-text/80 mb-1">利用小时 (h)</label>
+          <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-dark-text/80">利用小时 (h)</label>
           <input v-model.number="form.equivalent_hours" type="number" class="apple-input w-full text-base" />
-          <p v-if="lastAppliedWeather" class="mt-1 text-xs text-gray-500 dark:text-dark-text/60">
+          <p v-if="lastAppliedWeather" class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">
             已应用天气：
             <span v-if="lastAppliedWeather.province || lastAppliedWeather.city">
               {{ lastAppliedWeather.province ?? '-' }} {{ lastAppliedWeather.city ?? '-' }}
@@ -112,18 +112,18 @@ function backToForm(): void {
           </p>
         </div>
         <div class="sm:col-span-2">
-          <label class="block text-sm font-medium text-gray-700 dark:text-dark-text/80 mb-1">总投资额 (元)</label>
+          <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-dark-text/80">总投资额 (元)</label>
           <input v-model.number="form.total_investment" type="number" class="apple-input w-full text-base" />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-dark-text/80 mb-1">电价 (元/kWh)</label>
+          <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-dark-text/80">电价 (元/kWh)</label>
           <input v-model.number="form.electricity_price" type="number" step="0.01" class="apple-input w-full text-base" />
-          <p v-if="lastAppliedPolicy" class="mt-1 text-xs text-gray-500 dark:text-dark-text/60">
+          <p v-if="lastAppliedPolicy" class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">
             已应用政策：{{ lastAppliedPolicy.province }}，电价={{ lastAppliedPolicy.electricity_price }}
           </p>
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 dark:text-dark-text/80 mb-1">贷款比例</label>
+          <label class="mb-1 block text-sm font-medium text-slate-700 dark:text-dark-text/80">贷款比例</label>
           <input v-model.number="form.loan_ratio" type="number" step="0.1" class="apple-input w-full text-base" />
         </div>
 
@@ -149,9 +149,9 @@ function backToForm(): void {
       </button>
       </div>
 
-      <div class="flex min-h-[320px] min-w-0 w-1/2 shrink-0 flex-col border-l border-gray-200 p-4 dark:border-gray-700 sm:min-h-[420px] sm:p-6 md:w-full md:border-l-0 lg:col-span-7 lg:min-h-[450px] lg:border-l lg:p-9">
+      <div class="flex min-h-[320px] min-w-0 w-1/2 shrink-0 flex-col border-l border-emerald-100/80 p-4 dark:border-slate-800 sm:min-h-[420px] sm:p-6 md:w-full md:border-l-0 lg:col-span-7 lg:min-h-[450px] lg:border-l lg:p-9">
         <div class="mb-4 flex items-center justify-between gap-3">
-          <h3 class="text-lg font-bold tracking-[-0.03em] text-gray-900 dark:text-dark-text lg:text-[1.75rem]">决策分析视图</h3>
+          <h3 class="text-lg font-bold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[1.75rem]">决策分析视图</h3>
           <button
             type="button"
           class="apple-pill-secondary min-h-[40px] px-4 py-2 md:hidden"
@@ -167,20 +167,20 @@ function backToForm(): void {
 
         <div v-if="hasResult" class="grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div class="apple-subcard border-emerald-100 bg-emerald-50 p-4 dark:border-emerald-800/30 dark:bg-emerald-900/20">
-            <p class="text-sm text-gray-600 dark:text-dark-text/80">内部收益率 (IRR)</p>
+            <p class="text-sm text-slate-600 dark:text-dark-text/80">内部收益率 (IRR)</p>
             <p class="mt-2 font-mono text-xl font-bold text-emerald-500">{{ irrDisplay }}</p>
           </div>
           <div class="apple-subcard border-cyan-100 bg-cyan-50 p-4 dark:border-cyan-800/30 dark:bg-cyan-900/10">
-            <p class="text-sm text-gray-600 dark:text-dark-text/80">净现值 (NPV)</p>
+            <p class="text-sm text-slate-600 dark:text-dark-text/80">净现值 (NPV)</p>
             <p class="mt-2 font-mono text-xl font-bold text-cyan-500">¥{{ npvDisplay }}</p>
           </div>
-          <div class="apple-subcard p-4">
-            <p class="text-sm text-gray-600 dark:text-dark-text/80">平准化度电成本 (LCOE)</p>
+          <div class="apple-subcard border-teal-100/80 bg-teal-50/65 p-4 dark:border-teal-800/30 dark:bg-teal-900/10">
+            <p class="text-sm text-slate-600 dark:text-dark-text/80">平准化度电成本 (LCOE)</p>
             <p class="mt-2 font-mono text-xl font-bold text-slate-700 dark:text-dark-text">{{ lcoeDisplay }}</p>
           </div>
         </div>
 
-        <div class="relative mt-4 flex-1 w-full min-h-[260px] overflow-hidden rounded-[24px] border border-black/[0.04] bg-[#fbfbfd] dark:border-slate-700 dark:bg-dark-card sm:min-h-[320px] lg:min-h-[350px]">
+        <div class="relative mt-4 flex-1 w-full min-h-[260px] overflow-hidden rounded-2xl border border-emerald-100/80 bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(240,253,250,0.9))] dark:border-slate-700 dark:bg-dark-card sm:min-h-[320px] lg:min-h-[350px]">
           <div
             ref="chartRef"
             class="absolute inset-0 transition-opacity duration-500"
@@ -189,7 +189,7 @@ function backToForm(): void {
 
           <div
             v-if="!hasResult"
-            class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white px-6 text-center text-gray-400 dark:bg-dark-card dark:text-gray-500"
+            class="absolute inset-0 z-20 flex flex-col items-center justify-center bg-[linear-gradient(180deg,rgba(255,255,255,0.96),rgba(240,253,250,0.92))] px-6 text-center text-slate-400 dark:bg-dark-card dark:text-slate-500"
           >
             <div class="mb-4 text-5xl">📊</div>
             <p>请输入左侧参数并点击计算以生成图表</p>
@@ -214,11 +214,11 @@ function backToForm(): void {
               </span>
             </div>
             <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div class="rounded-[18px] bg-white px-3 py-2 dark:bg-slate-900/40">
+              <div class="panel-soft-cell">
                 <p class="text-xs text-slate-500 dark:text-dark-text/60">年度现金流</p>
                 <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">¥{{ item.cashFlow.toFixed(2) }}</p>
               </div>
-              <div class="rounded-[18px] bg-white px-3 py-2 dark:bg-slate-900/40">
+              <div class="panel-soft-cell">
                 <p class="text-xs text-slate-500 dark:text-dark-text/60">累计现金流</p>
                 <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">¥{{ item.cumulative.toFixed(2) }}</p>
               </div>
@@ -228,7 +228,7 @@ function backToForm(): void {
           <div class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
             <button
               type="button"
-              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              class="panel-page-btn"
               :disabled="!canPrevMobileCashFlowPage"
               @click="prevMobileCashFlowPage"
             >
@@ -237,7 +237,7 @@ function backToForm(): void {
             <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobileCashFlowPage + 1 }} / {{ mobileCashFlowTotalPages }}</span>
             <button
               type="button"
-              class="min-h-[40px] rounded-lg px-3 text-sm font-medium text-slate-700 transition disabled:opacity-40 dark:text-dark-text/80"
+              class="panel-page-btn"
               :disabled="!canNextMobileCashFlowPage"
               @click="nextMobileCashFlowPage"
             >
