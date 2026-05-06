@@ -4,6 +4,7 @@ import { getWeatherRadiationApi, type WeatherRadiationItem } from '@/api/weather
 import { getRegionCitiesApi, getRegionProvincesApi, reverseRegionByCoordinateApi } from '@/api/region';
 import { useMobilePager } from '@/composables/useMobilePager';
 import { useProjectStore } from '@/store/project';
+import StableQueryCard from '@/components/StableQueryCard.vue';
 
 const province = ref<string>('');
 const city = ref<string>('');
@@ -17,7 +18,7 @@ const loadingCities = ref(false);
 const errorMsg = ref<string | null>(null);
 const infoMsg = ref<string | null>(null);
 const rows = ref<WeatherRadiationItem[]>([]);
-const showMobileDetails = ref(false);
+const panelSide = ref<'form' | 'result'>('form');
 
 const projectStore = useProjectStore();
 
@@ -126,7 +127,6 @@ async function query(): Promise<void> {
   errorMsg.value = null;
   infoMsg.value = null;
   rows.value = [];
-  showMobileDetails.value = false;
 
   if (!province.value || !city.value) {
     errorMsg.value = '请选择省份和城市后再查询';
@@ -144,6 +144,7 @@ async function query(): Promise<void> {
     if (data.length === 0) {
       infoMsg.value = '当前省市暂无天气辐射数据，请切换城市重试';
     }
+    panelSide.value = 'result';
   } catch (e: any) {
     errorMsg.value = e?.message ?? '查询失败';
     rows.value = [];
@@ -170,6 +171,14 @@ function applyToCalc(): void {
   infoMsg.value = '已应用天气利用小时到收益测算';
 }
 
+function backToFilters(): void {
+  panelSide.value = 'form';
+}
+
+function showResults(): void {
+  panelSide.value = 'result';
+}
+
 onMounted(async () => {
   await loadProvinces();
   if (province.value) {
@@ -179,188 +188,245 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section id="weather-section" class="min-w-0 apple-card p-4 sm:p-6 lg:p-8">
-    <div class="space-y-6">
-      <div class="min-w-0">
-        <h3 class="text-xl font-bold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[1.9rem]">天气与辐射（省市查询）</h3>
-        <p class="apple-compact-copy mt-2 text-slate-500 dark:text-dark-text/60">
-          按省份与城市快速查询辐射和利用小时。
-        </p>
-      </div>
+  <StableQueryCard id="weather-section" :active="panelSide === 'result' ? 'back' : 'front'">
+    <template #front>
+        <div class="business-card-scroll">
+          <div class="min-w-0">
+            <h3 class="text-xl font-bold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[1.9rem]">天气与辐射（省市查询）</h3>
+            <p class="apple-compact-copy mt-2 text-slate-500 dark:text-dark-text/60">
+              按省份与城市快速查询辐射和利用小时。
+            </p>
+          </div>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
-        <div class="min-w-0">
-          <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">省份</label>
-          <select
-            v-model="province"
-            class="apple-input"
-            :disabled="loadingProvinces"
-          >
-            <option value="">请选择</option>
-            <option v-for="p in provinces" :key="p" :value="p">{{ p }}</option>
-          </select>
+          <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            <div class="min-w-0">
+              <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">省份</label>
+              <select
+                v-model="province"
+                class="apple-input"
+                :disabled="loadingProvinces"
+              >
+                <option value="">请选择</option>
+                <option v-for="p in provinces" :key="p" :value="p">{{ p }}</option>
+              </select>
+            </div>
+
+            <div class="min-w-0">
+              <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">城市</label>
+              <select
+                v-model="city"
+                class="apple-input"
+                :disabled="!province || loadingCities"
+              >
+                <option value="">请选择</option>
+                <option v-for="c in cities" :key="c" :value="c">{{ c }}</option>
+              </select>
+            </div>
+
+            <div class="min-w-0">
+              <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">条数</label>
+              <input
+                v-model.number="limit"
+                type="number"
+                min="1"
+                max="2000"
+                class="apple-input"
+              />
+            </div>
+          </div>
+
+          <div class="business-card-actions">
+            <button
+              @click="query"
+              class="apple-pill-primary"
+              :disabled="loading || !province || !city"
+            >
+              {{ loading ? '查询中...' : '查询' }}
+            </button>
+
+            <button
+              @click="applyToCalc"
+              class="apple-pill-secondary"
+              :disabled="loading || rows.length === 0"
+            >
+              应用到测算
+            </button>
+
+            <button
+              v-if="rows.length > 0"
+              type="button"
+              class="apple-pill-secondary"
+              @click="showResults"
+            >
+              查看结果
+            </button>
+          </div>
+
+          <div v-if="errorMsg || infoMsg" class="mt-4 space-y-3">
+            <div v-if="errorMsg" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+              {{ errorMsg }}
+            </div>
+            <div v-if="infoMsg" class="rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+              {{ infoMsg }}
+            </div>
+          </div>
+
+          <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div class="apple-subcard border-emerald-100/80 bg-emerald-50/60 p-3 sm:p-4 dark:border-emerald-800/30 dark:bg-emerald-900/12">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">最新日期</p>
+              <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ latest?.day ?? '-' }}</p>
+            </div>
+            <div class="apple-subcard border-cyan-100/80 bg-cyan-50/60 p-3 sm:p-4 dark:border-cyan-800/30 dark:bg-cyan-900/12">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">年辐射量 (kWh/m²)</p>
+              <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ summary.annual ?? '-' }}</p>
+            </div>
+            <div class="apple-subcard border-sky-100/80 bg-sky-50/60 p-3 sm:p-4 dark:border-sky-800/30 dark:bg-sky-900/12">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">等效利用小时数 (h)</p>
+              <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ summary.eqh ?? '-' }}</p>
+            </div>
+          </div>
         </div>
+    </template>
 
-        <div class="min-w-0">
-          <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">城市</label>
-          <select
-            v-model="city"
-            class="apple-input"
-            :disabled="!province || loadingCities"
-          >
-            <option value="">请选择</option>
-            <option v-for="c in cities" :key="c" :value="c">{{ c }}</option>
-          </select>
-        </div>
-
-        <div class="min-w-0">
-          <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">条数</label>
-          <input
-            v-model.number="limit"
-            type="number"
-            min="1"
-            max="2000"
-            class="apple-input"
-          />
-        </div>
-
-        <button
-          @click="query"
-          class="apple-pill-primary w-full self-end"
-          :disabled="loading || !province || !city"
-        >
-          {{ loading ? '查询中...' : '查询' }}
-        </button>
-
-        <button
-          @click="applyToCalc"
-          class="apple-pill-secondary w-full self-end"
-          :disabled="loading || rows.length === 0"
-        >
-          应用到测算
-        </button>
-      </div>
-    </div>
-
-    <div v-if="errorMsg" class="mb-4 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
-      {{ errorMsg }}
-    </div>
-    <div v-if="infoMsg" class="mb-4 rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
-      {{ infoMsg }}
-    </div>
-
-    <div class="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
-      <div class="apple-subcard border-emerald-100/80 bg-emerald-50/60 p-3 sm:p-4 dark:border-emerald-800/30 dark:bg-emerald-900/12">
-        <p class="text-xs text-slate-500 dark:text-dark-text/60">最新日期</p>
-        <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ latest?.day ?? '-' }}</p>
-      </div>
-      <div class="apple-subcard border-cyan-100/80 bg-cyan-50/60 p-3 sm:p-4 dark:border-cyan-800/30 dark:bg-cyan-900/12">
-        <p class="text-xs text-slate-500 dark:text-dark-text/60">年辐射量 (kWh/m²)</p>
-        <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ summary.annual ?? '-' }}</p>
-      </div>
-      <div class="apple-subcard border-sky-100/80 bg-sky-50/60 p-3 sm:p-4 dark:border-sky-800/30 dark:bg-sky-900/12">
-        <p class="text-xs text-slate-500 dark:text-dark-text/60">等效利用小时数 (h)</p>
-        <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ summary.eqh ?? '-' }}</p>
-      </div>
-    </div>
-
-    <div class="md:hidden">
-      <button
-        v-if="rows.length > 0"
-        type="button"
-        class="apple-pill-secondary mt-4 w-full justify-center"
-        @click="showMobileDetails = !showMobileDetails"
-      >
-        {{ showMobileDetails ? '收起详情' : '查看详情' }}
-      </button>
-
-      <div
-        v-if="showMobileDetails"
-        class="mt-4 space-y-3"
-        @touchstart.passive="onTouchStart"
-        @touchend.passive="onTouchEnd"
-      >
-        <article
-          v-for="item in mobileRows"
-          :key="`mobile-${item.day}-${item.latitude}-${item.longitude}`"
-          class="apple-subcard p-4"
-        >
-          <div class="flex items-start justify-between gap-3">
+    <template #back>
+        <div class="business-card-scroll business-card-scroll--result">
+          <div class="business-result-header">
             <div>
-              <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ item.day }}</p>
-              <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">日辐射 {{ item.shortwave_radiation_sum_kwh_m2 }}</p>
+              <h4 class="text-lg font-semibold text-slate-900 dark:text-dark-text">天气辐射结果</h4>
+              <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">
+                {{ province || '-' }} {{ city || '' }} · 当前展示 {{ rows.length }} 条
+              </p>
             </div>
-            <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
-              {{ item.temperature_mean_c ?? '-' }} °C
-            </span>
+            <div class="business-result-actions">
+              <button
+                type="button"
+                class="apple-pill-secondary min-h-[40px] px-4 py-2"
+                @click="backToFilters"
+              >
+                返回筛选
+              </button>
+              <button
+                type="button"
+                class="apple-pill-primary min-h-[40px] px-4 py-2"
+                :disabled="loading || rows.length === 0"
+                @click="applyToCalc"
+              >
+                应用到测算
+              </button>
+            </div>
           </div>
-          <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-            <div class="panel-soft-cell">
-              <p class="text-xs text-slate-500 dark:text-dark-text/60">降水</p>
-              <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.precipitation_sum_mm ?? '-' }} mm</p>
+
+          <div v-if="errorMsg || infoMsg" class="mb-4 space-y-3">
+            <div v-if="errorMsg" class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-400">
+              {{ errorMsg }}
             </div>
-            <div class="panel-soft-cell">
-              <p class="text-xs text-slate-500 dark:text-dark-text/60">风速</p>
-              <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.wind_speed_mean_m_s ?? '-' }} m/s</p>
+            <div v-if="infoMsg" class="rounded-2xl border border-emerald-200 bg-emerald-50/85 px-4 py-3 text-sm text-emerald-700 dark:border-emerald-500/20 dark:bg-emerald-500/10 dark:text-emerald-300">
+              {{ infoMsg }}
             </div>
           </div>
-        </article>
 
-        <div class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
-          <button
-            type="button"
-            class="panel-page-btn"
-            :disabled="!canPrevMobilePage"
-            @click="prevMobilePage"
-          >
-            上一页
-          </button>
-          <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
-          <button
-            type="button"
-            class="panel-page-btn"
-            :disabled="!canNextMobilePage"
-            @click="nextMobilePage"
-          >
-            下一页
-          </button>
-        </div>
-      </div>
-    </div>
-    <div class="space-y-3 md:hidden">
-      <div v-if="rows.length === 0" class="rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 px-4 py-6 text-center text-sm text-slate-500 dark:border-gray-700 dark:text-dark-text/60">
-        暂无数据。请切换省市重试。
-      </div>
-    </div>
+          <div class="mb-4 grid grid-cols-3 gap-3">
+            <div class="panel-soft-cell">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">最新日期</p>
+              <p class="mt-1 text-sm font-semibold text-slate-900 dark:text-dark-text">{{ latest?.day ?? '-' }}</p>
+            </div>
+            <div class="panel-soft-cell">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">年辐射量</p>
+              <p class="mt-1 text-sm font-semibold text-slate-900 dark:text-dark-text">{{ summary.annual ?? '-' }}</p>
+            </div>
+            <div class="panel-soft-cell">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">利用小时</p>
+              <p class="mt-1 text-sm font-semibold text-slate-900 dark:text-dark-text">{{ summary.eqh ?? '-' }}</p>
+            </div>
+          </div>
 
-    <div class="panel-table-shell hidden md:block">
-      <div class="touch-scroll overflow-x-auto">
-        <table class="min-w-full text-xs sm:text-sm">
-          <thead class="panel-table-head">
-            <tr class="text-left dark:text-dark-text/70">
-              <th class="px-4 py-3 font-medium">日期</th>
-              <th class="px-4 py-3 font-medium">日辐射 (kWh/m²)</th>
-              <th class="px-4 py-3 font-medium">均温(°C)</th>
-              <th class="px-4 py-3 font-medium">降水(mm)</th>
-              <th class="px-4 py-3 font-medium">风速(m/s)</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white/80 dark:bg-dark-card">
-            <tr v-for="r in rows" :key="`${r.day}-${r.latitude}-${r.longitude}`" class="border-t border-emerald-100/70 transition hover:bg-emerald-50/50 dark:border-gray-800 dark:hover:bg-slate-900/40">
-              <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ r.day }}</td>
-              <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ r.shortwave_radiation_sum_kwh_m2 }}</td>
-              <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.temperature_mean_c ?? '-' }}</td>
-              <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.precipitation_sum_mm ?? '-' }}</td>
-              <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.wind_speed_mean_m_s ?? '-' }}</td>
-            </tr>
-            <tr v-if="rows.length === 0" class="border-t border-emerald-100/70 dark:border-gray-800">
-              <td class="px-4 py-6 text-center text-slate-500 dark:text-dark-text/60" colspan="5">
+          <div class="business-result-body">
+            <div
+              class="space-y-3 md:hidden"
+              @touchstart.passive="onTouchStart"
+              @touchend.passive="onTouchEnd"
+            >
+              <div v-if="rows.length === 0" class="rounded-2xl border border-dashed border-emerald-200/80 bg-white/70 px-4 py-6 text-center text-sm text-slate-500 dark:border-gray-700 dark:text-dark-text/60">
                 暂无数据。请切换省市重试。
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
+              </div>
+              <article
+                v-for="item in mobileRows"
+                :key="`mobile-${item.day}-${item.latitude}-${item.longitude}`"
+                class="apple-subcard p-4"
+              >
+                <div class="flex items-start justify-between gap-3">
+                  <div>
+                    <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ item.day }}</p>
+                    <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">日辐射 {{ item.shortwave_radiation_sum_kwh_m2 }}</p>
+                  </div>
+                  <span class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300">
+                    {{ item.temperature_mean_c ?? '-' }} °C
+                  </span>
+                </div>
+                <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div class="panel-soft-cell">
+                    <p class="text-xs text-slate-500 dark:text-dark-text/60">降水</p>
+                    <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.precipitation_sum_mm ?? '-' }} mm</p>
+                  </div>
+                  <div class="panel-soft-cell">
+                    <p class="text-xs text-slate-500 dark:text-dark-text/60">风速</p>
+                    <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ item.wind_speed_mean_m_s ?? '-' }} m/s</p>
+                  </div>
+                </div>
+              </article>
+
+              <div v-if="rows.length > 0" class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
+                <button
+                  type="button"
+                  class="panel-page-btn"
+                  :disabled="!canPrevMobilePage"
+                  @click="prevMobilePage"
+                >
+                  上一页
+                </button>
+                <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
+                <button
+                  type="button"
+                  class="panel-page-btn"
+                  :disabled="!canNextMobilePage"
+                  @click="nextMobilePage"
+                >
+                  下一页
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-table-shell business-result-table hidden md:block">
+              <div class="touch-scroll overflow-x-auto">
+                <table class="min-w-full text-xs sm:text-sm">
+                  <thead class="panel-table-head">
+                    <tr class="text-left dark:text-dark-text/70">
+                      <th class="px-4 py-3 font-medium">日期</th>
+                      <th class="px-4 py-3 font-medium">日辐射 (kWh/m²)</th>
+                      <th class="px-4 py-3 font-medium">均温(°C)</th>
+                      <th class="px-4 py-3 font-medium">降水(mm)</th>
+                      <th class="px-4 py-3 font-medium">风速(m/s)</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white/80 dark:bg-dark-card">
+                    <tr v-for="r in rows" :key="`${r.day}-${r.latitude}-${r.longitude}`" class="border-t border-emerald-100/70 transition hover:bg-emerald-50/50 dark:border-gray-800 dark:hover:bg-slate-900/40">
+                      <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ r.day }}</td>
+                      <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ r.shortwave_radiation_sum_kwh_m2 }}</td>
+                      <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.temperature_mean_c ?? '-' }}</td>
+                      <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.precipitation_sum_mm ?? '-' }}</td>
+                      <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ r.wind_speed_mean_m_s ?? '-' }}</td>
+                    </tr>
+                    <tr v-if="rows.length === 0" class="border-t border-emerald-100/70 dark:border-gray-800">
+                      <td class="px-4 py-6 text-center text-slate-500 dark:text-dark-text/60" colspan="5">
+                        暂无数据。请切换省市重试。
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+    </template>
+  </StableQueryCard>
 </template>

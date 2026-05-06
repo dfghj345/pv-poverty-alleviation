@@ -627,7 +627,9 @@ onUnmounted(() => {
           <span class="text-2xl font-semibold text-emerald-400">PV</span>
           <span class="text-lg font-semibold tracking-wide">光伏扶贫数据平台</span>
         </div>
-        <p class="mt-3 text-sm text-slate-400">由真实 panel_data 数据驱动的前端展示与分析页面</p>
+        <p class="mt-4 text-sm text-white/80">
+          基于真实政策、电价、天气辐射和区域数据，联动地图展示、数据看板与收益测算，帮助快速验证光伏扶贫项目的落点与回报。
+        </p>
       </div>
     </footer>
   </div>

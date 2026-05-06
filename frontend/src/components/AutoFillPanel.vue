@@ -7,6 +7,7 @@ import { getPoliciesApi } from '@/api/policy';
 import { getWeatherRadiationApi } from '@/api/weather';
 import type { PanelDataMapAggregate } from '@/composables/useProjectMap';
 import { useProjectStore } from '@/store/project';
+import StableQueryCard from '@/components/StableQueryCard.vue';
 
 const REGION_SUFFIXES = ['维吾尔自治区', '壮族自治区', '回族自治区', '自治区', '特别行政区', '省', '市'] as const;
 
@@ -26,7 +27,7 @@ const projectStore = useProjectStore();
 const loading = ref(false);
 const errorMsg = ref<string | null>(null);
 const infoMsg = ref<string | null>(null);
-const mobilePanel = ref<'form' | 'result'>('form');
+const panelSide = ref<'form' | 'result'>('form');
 
 const fallbackStation = computed(() => projectStore.selectedStation);
 const hasSelection = computed(() => Boolean(props.selectedData || fallbackStation.value));
@@ -232,17 +233,17 @@ async function runAutoFill(options?: { silent?: boolean }): Promise<boolean> {
 
 async function handleSync(): Promise<void> {
   const success = await runAutoFill();
-  if (success && window.innerWidth < 768) {
-    mobilePanel.value = 'result';
+  if (success) {
+    panelSide.value = 'result';
   }
 }
 
 function showDetails(): void {
-  mobilePanel.value = 'result';
+  panelSide.value = 'result';
 }
 
 function backToSummary(): void {
-  mobilePanel.value = 'form';
+  panelSide.value = 'form';
 }
 
 watch(
@@ -268,12 +269,9 @@ watch(
 </script>
 
 <template>
-  <div class="min-w-0 apple-card overflow-hidden">
-    <div
-      class="flex w-[200%] transition-transform duration-300 ease-out md:block md:w-full md:transition-none"
-      :class="mobilePanel === 'result' ? '-translate-x-1/2 md:translate-x-0' : 'translate-x-0'"
-    >
-      <div class="min-w-0 w-1/2 shrink-0 p-4 sm:p-6 md:w-full lg:p-8">
+  <StableQueryCard :active="panelSide === 'result' ? 'back' : 'front'">
+    <template #front>
+      <div class="business-card-scroll">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <p class="text-sm uppercase tracking-[0.28em] text-emerald-600 dark:text-emerald-300">Auto Fill</p>
@@ -338,8 +336,10 @@ watch(
           {{ infoMsg }}
         </div>
       </div>
+    </template>
 
-      <div class="min-w-0 w-1/2 shrink-0 border-l border-emerald-100/80 p-4 dark:border-slate-800 sm:p-6 md:w-full md:border-l-0 lg:p-8">
+    <template #back>
+      <div class="business-card-scroll">
         <div class="flex items-center justify-between gap-3">
           <div>
             <p class="text-sm text-slate-500 dark:text-dark-text/60">关键字段</p>
@@ -392,6 +392,6 @@ watch(
           {{ infoMsg }}
         </div>
       </div>
-    </div>
-  </div>
+    </template>
+  </StableQueryCard>
 </template>

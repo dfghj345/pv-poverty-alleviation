@@ -184,6 +184,13 @@ function formatInteger(value: number): string {
   return new Intl.NumberFormat('zh-CN', { maximumFractionDigits: 0 }).format(value);
 }
 
+function formatProvinceAxisLabel(value: string): string {
+  const shortName = value
+    .replace(/维吾尔自治区|壮族自治区|回族自治区|特别行政区|自治区|省|市/g, '')
+    .slice(0, 2);
+  return shortName.split('').join('\n');
+}
+
 function syncKeywordInput(): void {
   keywordInput.value = props.query.keyword ?? '';
 }
@@ -313,9 +320,10 @@ function initCharts(): void {
         data: props.stats.by_province.slice(0, 12).map((item) => item.province),
         axisLabel: {
           color: textColor,
-          rotate: isCompact ? 40 : 25,
+          formatter: formatProvinceAxisLabel,
           interval: 0,
-          fontSize: isCompact ? 10 : 12,
+          lineHeight: isCompact ? 12 : 14,
+          fontSize: isCompact ? 11 : 12,
         },
         axisLine: { lineStyle: { color: splitLineColor } },
       },
@@ -710,7 +718,7 @@ onUnmounted(() => {
 
     <section
       v-if="showTable"
-      class="apple-card p-4 sm:p-6 lg:p-8"
+      class="apple-card stable-table-card p-4 sm:p-6 lg:p-8"
     >
       <div class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
@@ -751,7 +759,7 @@ onUnmounted(() => {
 
       <div
         v-if="showMobileTable"
-        class="mt-5 space-y-3 md:hidden"
+        class="mt-5 max-h-[520px] space-y-3 overflow-y-auto pr-1 md:hidden"
         @touchstart.passive="onMobileTableTouchStart"
         @touchend.passive="onMobileTableTouchEnd"
       >
@@ -816,7 +824,7 @@ onUnmounted(() => {
         </template>
       </div>
 
-      <div class="panel-table-shell touch-scroll mt-5 hidden overflow-x-auto md:block">
+      <div class="panel-table-shell stable-table-body touch-scroll hidden md:block">
         <table class="min-w-full divide-y divide-slate-200 text-left text-sm dark:divide-slate-800">
           <thead class="panel-table-head">
             <tr>
@@ -900,8 +908,6 @@ onUnmounted(() => {
               <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">数据工具</p>
               <p class="apple-compact-copy mt-2">先选择一个工具，再查看表单、结果和应用动作。</p>
             </div>
-            <span class="rounded-full bg-emerald-600 px-3 py-1 text-xs font-medium text-white shadow-[0_8px_20px_rgba(16,185,129,0.2)] dark:bg-emerald-500 dark:text-white">
-              {{ mobileToolItems.length }} 个</span>
           </div>
 
           <div class="mt-4 grid grid-cols-2 gap-3">

@@ -94,6 +94,11 @@
     @apply text-slate-600 dark:bg-slate-900/70 dark:text-dark-text/70;
   }
 
+  .panel-table-head th {
+    background: var(--pv-table-head-bg);
+    @apply sticky top-0 z-10 dark:bg-slate-900/95;
+  }
+
   .panel-page-btn {
     background-color: rgba(255, 255, 255, 0.9);
     @apply min-h-[40px] rounded-xl border border-emerald-100 px-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50 disabled:opacity-40 dark:border-slate-700 dark:bg-dark-card dark:text-dark-text/80 dark:hover:border-emerald-400/20 dark:hover:bg-slate-900/70;
@@ -102,6 +107,93 @@
   .panel-soft-cell {
     background-color: rgba(255, 255, 255, 0.9);
     @apply rounded-xl border border-emerald-100/80 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.8)] dark:border-slate-800 dark:bg-slate-950/40;
+  }
+
+  .business-flip-card {
+    height: 620px;
+    perspective: 1400px;
+    @apply relative overflow-hidden;
+  }
+
+  .business-flip-card--large {
+    height: 760px;
+  }
+
+  .business-flip-stage {
+    transform-style: preserve-3d;
+    @apply absolute inset-0 transition-transform duration-500 ease-out;
+  }
+
+  .business-flip-stage.is-flipped {
+    transform: rotateY(180deg);
+  }
+
+  .business-card-face {
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    @apply absolute inset-0 flex min-h-0 flex-col;
+  }
+
+  .business-card-back {
+    transform: rotateY(180deg);
+  }
+
+  .business-card-scroll {
+    @apply flex h-full min-h-0 flex-col overflow-y-auto p-4 sm:p-6 lg:p-8;
+  }
+
+  .business-card-scroll--result {
+    @apply overflow-hidden;
+  }
+
+  .business-card-actions {
+    @apply mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center;
+  }
+
+  .business-card-actions .apple-pill-primary,
+  .business-card-actions .apple-pill-secondary {
+    @apply w-full sm:w-auto sm:min-w-[132px];
+  }
+
+  .business-result-header {
+    @apply mb-4 flex flex-col gap-3 border-b border-emerald-100/80 pb-4 sm:flex-row sm:items-start sm:justify-between dark:border-slate-800;
+  }
+
+  .business-result-actions {
+    @apply flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center;
+  }
+
+  .business-result-actions .apple-pill-primary,
+  .business-result-actions .apple-pill-secondary {
+    @apply w-full sm:w-auto;
+  }
+
+  .business-result-body {
+    @apply min-h-0 flex-1 overflow-y-auto pr-1;
+  }
+
+  .business-result-table {
+    @apply h-full min-h-0;
+  }
+
+  .business-result-table > .touch-scroll {
+    @apply h-full overflow-auto;
+  }
+
+  .business-result-table--auto {
+    @apply h-auto;
+  }
+
+  .business-result-table--auto > .touch-scroll {
+    @apply h-auto max-h-[360px] overflow-auto;
+  }
+
+  .stable-table-card {
+    @apply overflow-hidden;
+  }
+
+  .stable-table-body {
+    @apply mt-5 h-[520px] overflow-auto;
   }
 }
 

@@ -3,6 +3,7 @@ import { computed, onMounted, ref, watch } from 'vue';
 import { getPovertyCountiesApi, type PovertyCountyItem } from '@/api/poverty';
 import { getRegionCitiesApi, getRegionProvincesApi } from '@/api/region';
 import { useMobilePager } from '@/composables/useMobilePager';
+import StableQueryCard from '@/components/StableQueryCard.vue';
 
 const province = ref<string>('');
 const city = ref<string>('');
@@ -15,7 +16,7 @@ const loadingProvinces = ref(false);
 const loadingCities = ref(false);
 const errorMsg = ref<string | null>(null);
 const rows = ref<PovertyCountyItem[]>([]);
-const mobilePanel = ref<'form' | 'result'>('form');
+const panelSide = ref<'form' | 'result'>('form');
 
 const totalShown = computed(() => rows.value.length);
 const hasResult = computed(() => rows.value.length > 0);
@@ -86,17 +87,17 @@ async function query(): Promise<boolean> {
 
 async function handleQuery(): Promise<void> {
   const success = await query();
-  if (success && window.innerWidth < 768) {
-    mobilePanel.value = 'result';
+  if (success) {
+    panelSide.value = 'result';
   }
 }
 
 function backToFilters(): void {
-  mobilePanel.value = 'form';
+  panelSide.value = 'form';
 }
 
 function showResults(): void {
-  mobilePanel.value = 'result';
+  panelSide.value = 'result';
 }
 
 onMounted(async () => {
@@ -105,20 +106,17 @@ onMounted(async () => {
 </script>
 
 <template>
-  <section class="min-w-0 apple-card overflow-hidden">
-    <div
-      class="flex w-[200%] transition-transform duration-300 ease-out md:block md:w-full md:transition-none"
-      :class="mobilePanel === 'result' ? '-translate-x-1/2 md:translate-x-0' : 'translate-x-0'"
-    >
-      <div class="min-w-0 w-1/2 shrink-0 p-4 sm:p-6 md:w-full lg:p-8">
-        <div class="space-y-6">
+  <StableQueryCard :active="panelSide === 'result' ? 'back' : 'front'">
+    <template #front>
+        <div class="business-card-scroll">
           <div>
             <h3 class="text-xl font-bold tracking-[-0.03em] text-slate-900 dark:text-dark-text lg:text-[1.9rem]">贫困地区数据</h3>
             <p class="apple-compact-copy mt-1 text-slate-500 dark:text-dark-text/60">
               按省份或城市筛选贫困地区数据，并在当前卡片查看结果。
             </p>
           </div>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+
+          <div class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
             <div class="min-w-0">
               <label class="mb-1 block text-xs text-slate-500 dark:text-dark-text/60">省份</label>
               <select
@@ -151,126 +149,155 @@ onMounted(async () => {
                 class="apple-input"
               />
             </div>
+          </div>
+
+          <div class="business-card-actions">
             <button
-              class="apple-pill-primary w-full self-end"
+              class="apple-pill-primary"
               :disabled="loading"
               @click="handleQuery"
             >
               {{ loading ? '查询中...' : '查询' }}
             </button>
-          </div>
-        </div>
-
-        <div v-if="errorMsg" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
-          {{ errorMsg }}
-        </div>
-        <button
-          v-if="hasResult"
-          type="button"
-          class="apple-pill-secondary mt-4 w-full md:hidden"
-          @click="showResults"
-        >
-          查看查询结果
-        </button>
-      </div>
-
-      <div class="min-w-0 w-1/2 shrink-0 border-l border-emerald-100/80 p-4 dark:border-slate-800 sm:p-6 md:w-full md:border-l-0 lg:p-8">
-        <div class="mb-4 flex items-center justify-between gap-3">
-          <div>
-            <h4 class="text-lg font-semibold text-slate-900 dark:text-dark-text">贫困地区结果</h4>
-            <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">当前展示：{{ totalShown }} 条</p>
-          </div>
-          <button
-            type="button"
-            class="apple-pill-secondary min-h-[40px] px-4 py-2 md:hidden"
-            @click="backToFilters"
-          >
-            返回筛选
-          </button>
-        </div>
-
-        <div
-          class="space-y-3 md:hidden"
-          @touchstart.passive="onTouchStart"
-          @touchend.passive="onTouchEnd"
-        >
-          <div v-if="rows.length === 0" class="rounded-lg border border-dashed border-emerald-200/80 bg-white/70 px-4 py-6 text-center text-sm text-slate-500 dark:border-gray-700 dark:text-dark-text/60">
-            暂无数据。
-          </div>
-          <article
-            v-for="(row, index) in mobileRows"
-            :key="`mobile-${row.adcode ?? ''}-${row.county}-${index}`"
-            class="apple-subcard p-4"
-          >
-            <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ row.county }}</p>
-            <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">{{ row.province }} {{ row.city ?? '' }}</p>
-            <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
-              <div class="panel-soft-cell">
-                <p class="text-xs text-slate-500 dark:text-dark-text/60">人口</p>
-                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.population ?? '-' }}</p>
-              </div>
-              <div class="panel-soft-cell">
-                <p class="text-xs text-slate-500 dark:text-dark-text/60">人均收入</p>
-                <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.income_per_capita_yuan ?? '-' }}</p>
-              </div>
-            </div>
-            <div class="panel-soft-cell mt-3 text-sm">
-              <p class="text-xs text-slate-500 dark:text-dark-text/60">标签</p>
-              <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.tags ?? '-' }}</p>
-            </div>
-          </article>
-
-          <div v-if="rows.length > 0" class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
             <button
+              v-if="hasResult"
               type="button"
-              class="panel-page-btn"
-              :disabled="!canPrevMobilePage"
-              @click="prevMobilePage"
+              class="apple-pill-secondary"
+              @click="showResults"
             >
-              上一条
-            </button>
-            <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
-            <button
-              type="button"
-              class="panel-page-btn"
-              :disabled="!canNextMobilePage"
-              @click="nextMobilePage"
-            >
-              下一条
+              查看结果
             </button>
           </div>
-        </div>
 
-        <div class="panel-table-shell touch-scroll hidden overflow-x-auto md:block">
-          <table class="min-w-full text-xs sm:text-sm">
-            <thead class="panel-table-head">
-              <tr class="text-left dark:text-dark-text/70">
-                <th class="px-4 py-3 font-medium">省份</th>
-                <th class="px-4 py-3 font-medium">市/州</th>
-                <th class="px-4 py-3 font-medium">县/区</th>
-                <th class="px-4 py-3 font-medium">人口</th>
-                <th class="px-4 py-3 font-medium">人均收入(元)</th>
-                <th class="px-4 py-3 font-medium">标签</th>
-              </tr>
-            </thead>
-            <tbody class="bg-white/80 dark:bg-dark-card">
-              <tr v-for="(row, index) in rows" :key="`${row.adcode ?? ''}-${row.county}-${index}`" class="border-t border-emerald-100/70 transition hover:bg-emerald-50/50 dark:border-gray-800 dark:hover:bg-slate-900/40">
-                <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ row.province }}</td>
-                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.city ?? '-' }}</td>
-                <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ row.county }}</td>
-                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.population ?? '-' }}</td>
-                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.income_per_capita_yuan ?? '-' }}</td>
-                <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.tags ?? '-' }}</td>
-              </tr>
-              <tr v-if="rows.length === 0" class="border-t border-emerald-100/70 dark:border-gray-800">
-                <td class="px-4 py-6 text-center text-slate-500 dark:text-dark-text/60" colspan="6">
-                  暂无数据。
-                </td>
-              </tr>
-            </tbody>
-          </table>
+          <div v-if="errorMsg" class="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+            {{ errorMsg }}
+          </div>
+
+          <div class="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div class="apple-subcard border-emerald-100/80 bg-emerald-50/60 p-3 sm:p-4 dark:border-emerald-800/30 dark:bg-emerald-900/12">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">当前省份</p>
+              <p class="mt-1 truncate text-lg font-semibold text-slate-900 dark:text-dark-text">{{ province || '全部' }}</p>
+            </div>
+            <div class="apple-subcard border-cyan-100/80 bg-cyan-50/60 p-3 sm:p-4 dark:border-cyan-800/30 dark:bg-cyan-900/12">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">当前城市</p>
+              <p class="mt-1 truncate text-lg font-semibold text-slate-900 dark:text-dark-text">{{ city || '全部' }}</p>
+            </div>
+            <div class="apple-subcard border-sky-100/80 bg-sky-50/60 p-3 sm:p-4 dark:border-sky-800/30 dark:bg-sky-900/12">
+              <p class="text-xs text-slate-500 dark:text-dark-text/60">已加载结果</p>
+              <p class="mt-1 text-lg font-semibold text-slate-900 dark:text-dark-text">{{ totalShown }} 条</p>
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
-  </section>
+    </template>
+
+    <template #back>
+        <div class="business-card-scroll business-card-scroll--result">
+          <div class="business-result-header">
+            <div>
+              <h4 class="text-lg font-semibold text-slate-900 dark:text-dark-text">贫困地区结果</h4>
+              <p class="mt-1 text-sm text-slate-500 dark:text-dark-text/60">当前展示：{{ totalShown }} 条</p>
+            </div>
+            <div class="business-result-actions">
+              <button
+                type="button"
+                class="apple-pill-secondary min-h-[40px] px-4 py-2"
+                @click="backToFilters"
+              >
+                返回筛选
+              </button>
+            </div>
+          </div>
+
+          <div v-if="errorMsg" class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-500/10 dark:text-red-300">
+            {{ errorMsg }}
+          </div>
+
+          <div class="business-result-body">
+            <div
+              class="space-y-3 md:hidden"
+              @touchstart.passive="onTouchStart"
+              @touchend.passive="onTouchEnd"
+            >
+              <div v-if="rows.length === 0" class="rounded-lg border border-dashed border-emerald-200/80 bg-white/70 px-4 py-6 text-center text-sm text-slate-500 dark:border-gray-700 dark:text-dark-text/60">
+                暂无数据。
+              </div>
+              <article
+                v-for="(row, index) in mobileRows"
+                :key="`mobile-${row.adcode ?? ''}-${row.county}-${index}`"
+                class="apple-subcard p-4"
+              >
+                <p class="text-sm font-semibold text-slate-900 dark:text-dark-text">{{ row.county }}</p>
+                <p class="mt-1 text-xs text-slate-500 dark:text-dark-text/60">{{ row.province }} {{ row.city ?? '' }}</p>
+                <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                  <div class="panel-soft-cell">
+                    <p class="text-xs text-slate-500 dark:text-dark-text/60">人口</p>
+                    <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.population ?? '-' }}</p>
+                  </div>
+                  <div class="panel-soft-cell">
+                    <p class="text-xs text-slate-500 dark:text-dark-text/60">人均收入</p>
+                    <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.income_per_capita_yuan ?? '-' }}</p>
+                  </div>
+                </div>
+                <div class="panel-soft-cell mt-3 text-sm">
+                  <p class="text-xs text-slate-500 dark:text-dark-text/60">标签</p>
+                  <p class="mt-1 font-medium text-slate-900 dark:text-dark-text">{{ row.tags ?? '-' }}</p>
+                </div>
+              </article>
+
+              <div v-if="rows.length > 0" class="apple-subcard flex items-center justify-between gap-3 px-3 py-2">
+                <button
+                  type="button"
+                  class="panel-page-btn"
+                  :disabled="!canPrevMobilePage"
+                  @click="prevMobilePage"
+                >
+                  上一条
+                </button>
+                <span class="text-sm text-slate-500 dark:text-dark-text/60">{{ mobilePage + 1 }} / {{ mobileTotalPages }}</span>
+                <button
+                  type="button"
+                  class="panel-page-btn"
+                  :disabled="!canNextMobilePage"
+                  @click="nextMobilePage"
+                >
+                  下一条
+                </button>
+              </div>
+            </div>
+
+            <div class="panel-table-shell business-result-table hidden md:block">
+              <div class="touch-scroll overflow-x-auto">
+                <table class="min-w-full text-xs sm:text-sm">
+                  <thead class="panel-table-head">
+                    <tr class="text-left dark:text-dark-text/70">
+                      <th class="px-4 py-3 font-medium">省份</th>
+                      <th class="px-4 py-3 font-medium">市/州</th>
+                      <th class="px-4 py-3 font-medium">县/区</th>
+                      <th class="px-4 py-3 font-medium">人口</th>
+                      <th class="px-4 py-3 font-medium">人均收入(元)</th>
+                      <th class="px-4 py-3 font-medium">标签</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white/80 dark:bg-dark-card">
+                    <tr v-for="(row, index) in rows" :key="`${row.adcode ?? ''}-${row.county}-${index}`" class="border-t border-emerald-100/70 transition hover:bg-emerald-50/50 dark:border-gray-800 dark:hover:bg-slate-900/40">
+                      <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ row.province }}</td>
+                      <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.city ?? '-' }}</td>
+                      <td class="px-4 py-3 text-slate-900 dark:text-dark-text">{{ row.county }}</td>
+                      <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.population ?? '-' }}</td>
+                      <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.income_per_capita_yuan ?? '-' }}</td>
+                      <td class="px-4 py-3 text-slate-700 dark:text-dark-text/80">{{ row.tags ?? '-' }}</td>
+                    </tr>
+                    <tr v-if="rows.length === 0" class="border-t border-emerald-100/70 dark:border-gray-800">
+                      <td class="px-4 py-6 text-center text-slate-500 dark:text-dark-text/60" colspan="6">
+                        暂无数据。
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+    </template>
+  </StableQueryCard>
 </template>
